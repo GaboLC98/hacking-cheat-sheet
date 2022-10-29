@@ -1,0 +1,44 @@
+####DNS
+###ZONAS
+##Definiciones
+Una zona DNS es un espacio de nombres que administra una organizacion. Hay varias zonas DNS, por los que estos servidores utilzian la transferencia de zona para copiar
+parte de la base de uno de estos sv a otro. Esta transferencia de zona no requiere ninguna autenticacion, si el DNS esta mal configurado puede responder con la copia  de
+la informacion de su zona. De esta forma un atacante puede obtener mas informacion y aumentar su superficie de ataque.
+
+##Comandos
+dig AXFR @dns url
+#AXFR sirve para volcar todos los espacios de nombres DNS de un sv vulnerable
+fierce --domain zonetransfer.me
+#Enumerar todos los servidores DNS del dominio raiz para buscar transf de zona
+
+###DOMINIOS Y SUBDOMINIOS
+##Definiciones
+Los dominios son nombres registrados, mercadolibre.com, google.com, etc. Subdominio hace referencia a la adquisicion de otro dominio bajo el CNAME (el dominio)
+De esta forma se le asigna diferentes dominios a un dominio principal.
+En el caso de que ese dominio principal este disponible, quien lo registre tendra control sobre los subdomminios hasta que el sv DNS se actualice puesto que resolveria 
+hacia el atacante
+
+##Comandos subdominios
+./subfinder -d domain.com -v
+#Enumeracion de subdominios
+#En este caso, subfinder utiliza OSINT para obtener la data (https://dnsdumpster.com/)
+*Aclaracion: Se puede intentar obtener esto mediante fuerza bruta con diccionario de palabras (ej. sublist3r)*
+
+./subbrute domain.com -s ./names.txt -r ./resolvers.txt
+#Permite utilizar resoluteres ya definidos para atacar con fuerza bruta objetivos sin acceso a internet
+
+##Comandos CNAME
+host sub.domain.com
+otro: nslookup
+#De esta forma podemos saber a donde apunta. En el caso de que a donde apunte no posea un dueño, si intentamos suplantar podriamos
+#Intentar quedarnos con el subdominio
+
+###Suplantacion DNS
+##Definiciones
+Una suplantacion DNS o envenenamiento den cache DNS implica alterar los registros reales con informacion falsa para redirigir a un sitio falso.
+- Atacante interceptando la comuinicacion entre usuario y servidor DNS para enrutar al usuario a otro destino (man in the midle attack)
+- Explotacion de vulnerabilidades en un sv DNS para que el atacante pueda controlarlo y modificar los registros
+
+##Envenenamiento local
+Consiste en alñterar los rchivos que resuelven host. Tools que sirven para poder redirigir el trafico son ettercap y Bettercap
+
