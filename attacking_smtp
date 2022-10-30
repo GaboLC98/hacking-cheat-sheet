@@ -1,0 +1,64 @@
+####SMTP
+
+##Definiciones
+SMTP es el protocolo por el cual se envian y reciben mails. Al enviar uno, el servidor que usamos establece una conexion SMTP.
+Cuando visitamos nuestro mail nos conectamos a un sv POP3 o IMAP4. El primero se puede configurar para que almacene los mails descargados en el servidor mientras que el segundo no elimina los mails descargados, siempre se mantienen.
+
+Depende los puertos que usa el servidor significa una u otra cosa:
+25      - SMTP sin cifrar
+143    - IMAP4 sin cifrar
+110     - POP3 sin cifrar
+465     - SMTP cifrado   
+993     - IMAP4 encriptado
+994     - POP3 encriptado
+
+##Comandos
+host -t MX domminio.eu
+#Nos devuelve los mails del dominio
+dig MX domminio.com
+#Lo mismo
+dig A mail.dominio.comm
+#Estos servidores de mail tienen su propia IP. Para saber esto podemos consultar los registros A de DNS
+
+telnet ip puerto
+#De esta forma podemos conectarnos al servidor
+
+#SERVIDOR SMTP
+VRFY usr
+#Dentro del servidor, podemos verificar usuarios validos
+EXPN user
+#Enumera a usuarios si se usan listas.
+MAIL FROM:mail
+#Nos permite asignar un mail de envio
+RCPT TO:usr
+#Si el usuario es valido nos permite asignarlo como el receptor
+
+#SERVIDOR POP3
+USER usr
+#Enumeramos usuarios
+
+#AUTOMATIZAR
+smtp-user-enum -M RCPT -U userlist.txt -D inlanefreight.htb -t 10.129.203.7
+#flag M define modo, flag U lista de usuarios a usar, flag D dominio de la direccion de correo y flag t para ip
+
+#SERVIDORES EN NUBE
+python3 o365spray.py --validate --domain msplaintext.xyz
+#Herramienta para ofice 365. Validamos el dominio
+python3 o365spray.py --enum -U users.txt --domain msplaintext.xyz
+#Si es valido podemos enumerar usuarios
+python3 o365spray.py --spray -U usersfound.txt -p 'March2022!' --count 1 --lockout 1 --domain msplaintext.xyz
+#Al igual que con hydra, la herramienta nos permite atacar por fuerza bruta
+
+##Definiciones
+Open relay hace referencia a la posibilidad de usar el servidor para enviar mail y que aparezcan como enviados desde este.
+
+##Comandos
+nmap -p25 -Pn --script smtp-open-relay 10.10.11.213
+#Este script de nmap nos permite saber si es posible esto
+swaks --from notifications@dominio.com --to employees@inlanefreight.com --header 'Subject: TITULO' --body 'PHISHING. http://mycustomphishinglink.com/' --server OPENRELAY_SV_HABILITADO
+#Si open relay esta habilitado, con cualquier cliente de correo podemos enviar estos
+
+
+
+
+

@@ -1,12 +1,13 @@
 ####DNS
 ###ZONAS
 ##Definiciones
+Los servidores DNS tienen diferentes registros para poder trabajar correctamente.
 Una zona DNS es un espacio de nombres que administra una organizacion. Hay varias zonas DNS, por los que estos servidores utilzian la transferencia de zona para copiar
 parte de la base de uno de estos sv a otro. Esta transferencia de zona no requiere ninguna autenticacion, si el DNS esta mal configurado puede responder con la copia  de
 la informacion de su zona. De esta forma un atacante puede obtener mas informacion y aumentar su superficie de ataque.
 
 ##Comandos
-dig AXFR @dns url
+dig AXFR @dominio url
 #AXFR sirve para volcar todos los espacios de nombres DNS de un sv vulnerable
 fierce --domain zonetransfer.me
 #Enumerar todos los servidores DNS del dominio raiz para buscar transf de zona
@@ -40,5 +41,5 @@ Una suplantacion DNS o envenenamiento den cache DNS implica alterar los registro
 - Explotacion de vulnerabilidades en un sv DNS para que el atacante pueda controlarlo y modificar los registros
 
 ##Envenenamiento local
-Consiste en alñterar los rchivos que resuelven host. Tools que sirven para poder redirigir el trafico son ettercap y Bettercap
+Consiste en alterar los rchivos que resuelven host. Tools que sirven para poder redirigir el trafico son ettercap y Bettercap
 
