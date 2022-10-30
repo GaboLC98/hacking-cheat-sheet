@@ -58,7 +58,4 @@ nmap -p25 -Pn --script smtp-open-relay 10.10.11.213
 swaks --from notifications@dominio.com --to employees@inlanefreight.com --header 'Subject: TITULO' --body 'PHISHING. http://mycustomphishinglink.com/' --server OPENRELAY_SV_HABILITADO
 #Si open relay esta habilitado, con cualquier cliente de correo podemos enviar estos
 
-
-
-
-
+Usar IMAP: https://www.atmail.com/blog/imap-101-manual-imap-sessions/
