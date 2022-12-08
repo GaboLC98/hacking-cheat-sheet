@@ -178,3 +178,28 @@ sudo ./chisel server --reverse -v -p 1234 --socks5
 
 ./chisel client -v 10.10.14.17:1234 R:socks
 #Configuramos el cliente con la R para setear el reverse
+
+
+
+	####ICMP
+	###ptunnel-ng
+Esta tunelizacion funciona encapsulando el trafico en paquetes ICMP. Esto solo funcionaria en una red donde el firewall permita pingear targets
+
+git clone https://github.com/utoni/ptunnel-ng.git
+#Clonar tool
+sudo ./autogen.sh
+#Buildeamos el tool
+Una vez realizado esto podemos usarlo tanto del lado del cliente como del sv, por lo que deberiamos transferirlo.
+
+scp -r ptunnel-ng ubuntu@10.129.202.64:~/
+#Transferimos mediante SSH. -r para recursividad
+
+~/ptunnel-ng/src$ sudo ./ptunnel-ng -r10.129.202.64 -R22
+#Del lado del servidor configuramos ptunnel-ng para que escuche conexiones de la ip flag -r
+sudo ./ptunnel-ng -p10.129.202.64 -l2222 -r10.129.202.64 -R22
+#Del lago del cliente configuramos para dirigirnos a la ip objetivo (flag -p) usando el puerto 2222 (flag -l)
+
+ssh -p2222 -lubuntu 127.0.0.1
+#Confirmamos que podamos conectarnos mediante ptunnel-ng
+Una vez realizado esto podemos realizar dynamic port forwarding con SSH (-D 9050) para usarlo con proxychains
+
