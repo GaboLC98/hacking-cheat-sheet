@@ -203,3 +203,26 @@ ssh -p2222 -lubuntu 127.0.0.1
 #Confirmamos que podamos conectarnos mediante ptunnel-ng
 Una vez realizado esto podemos realizar dynamic port forwarding con SSH (-D 9050) para usarlo con proxychains
 
+	####RDP
+	###SocksOverRDP
+Usa Dynamic virtual channels (DVC). DVC tuneliza nuestros paquetes mediante RDP.
+Para hacer esto vamos a necesitar>
+1- https://www.proxifier.com/download/#win-tab
+2- https://github.com/nccgroup/SocksOverRDP/releases
+Nos podemos conectar mediante xfreerdp a la maquina victima y pasamos el 2.
+Una vez pasado, debemos descargar en la maquina el siguiente dll mediante regsvr32.exe: 
+
+regsvr32.exe SocksOverRDP-Plugin.dll
+#Descargamos el archvio DLL necesario
+
+mstsc.exe
+#Con este comando en windows podemos loguearnos a la maquina a la cual queremos llegar. Nos aparecera un cartel avisando que sockoverRDP esta habilitado
+#Va a escuchar en 127.0.0.1:1080
+
+SocksOverRDPx64.zip o SocksOverRDP-Server.exe tiene que pasarse a la maquina a la que queremos pivotar para que comience a escuchar en 1080
+
+netstat -antb | findstr 1080
+#Verificamos que este escuchando
+
+A la maquina windows debemos pasar el archivo de descarga nro 1. Aca gif de como configurarlo en dicha maquina: https://academy.hackthebox.com/module/158/section/1439
+
