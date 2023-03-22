@@ -1,0 +1,77 @@
+	####SQL Injection
+	###Basico
+Esto puede darse de varias formas distintas, la basica y la primera que aparece en Burp academy (https://portswigger.net/web-security/sql-injection/lab-retrieve-hidden-data) 
+consta de consultas mediante peticiones GET las cuales pueden ser manipuladas.
+Para verificar dicha vulnerabilidad solo hay que ingresar algun caracter como comillas simples para saber si nos devuelve un error puesto que la query
+se romperia.
+Una vez determinado esto hay una serie de elementos que permiten poder ver que hay por detras:
+
+--
+#Con esto le estamos diciendo que ignore todo lo que sigue en la query.
+
+'' OR 1=1 --
+#Con esto estamos diciendo que devuelva WHERE elemento = '' OR 1=1
+#Esto es siempre true por lo que va a mostrar todo
+
+
+Cuando nos encontramos en un login (https://portswigger.net/web-security/sql-injection/lab-login-bypass) se puede aplicar lo mismo de arriba.
+Si pasamos el usuario, cerramos las comillas (') y luego agregamos -- para que no tome en cuenta otros parametros para que la query sea
+true como puede ser la password, podriamos acceder.
+
+user: Administrator'--
+password: asd
+#Esto se utilizo en el lab para resolverlo. En este caso la query sea (seguramente) SELECT something FROM users WHERE user = <'user'> and password <'password'>
+
+	####Authentication
+	###Basico
+lab https://portswigger.net/web-security/authentication/password-based/lab-username-enumeration-via-different-responses
+Un problema ya no tan comun es la de aclararle al usuario que la contraseña es incorrecta o que el usuario es incorrecto. Cuando esto se le dice por separado a la persona que quiere ingresar
+es un potencial vector de ataque para listar usuarios y, posteriormenete contraseñas.
+Para esto se utiiza el INTRUDER de burp suite: Se realiza la request, se lo manda al intruder, se selecciona para que se modifique solo el usuario y mediante el 
+Length podemos ver si las rta es distinta. En el caso que lo sea quiere decir que el mensaje de error que nos aparece es distinto dandonos a saber que
+el usuario es correcto pero la password no. El mismo proceso se para la password.
+
+
+lab: https://portswigger.net/web-security/authentication/multi-factor/lab-2fa-simple-bypass
+Este problema se da dado que el 2FA se puede bypassear cambiando la url para que nos dirija hacia la cuenta. El problema viene dado ya que al ingresar las credenciales
+la webapp te loguea y el 2FA esta en el medio solo para redirigirte hacia tu cuenta.
+
+lab: https://portswigger.net/web-security/authentication/other-mechanisms/lab-password-reset-broken-logic
+En este laboratorio se da un error en la logica con la que se resetea la contraseña dado que en la request viaja en cleartext el usr al cual se le va a cambiar la contraseña
+Esto genera que la peticion pueda modificarse, ponerse otro usuario y que se cambie la contraseña de este si el usr existe.
+
+	####Directory traversal
+	###Basico
+lab: https://portswigger.net/web-security/file-path-traversal/lab-simple
+Esta vulnerabilidad consta en poder listar archivos gracias a la forma en la que la web app obtiene las imagenes de los productos.
+
+filename=xx.jpg
+#De esta forma, la web app busca el archivo xx.jpg en el directorio.
+
+filename=/../../../etc/passwd
+#Gracias a la forma de buscar y que no se limpia lo que se le pide, podemo slistar archivos del sistema
+
+	####Business logic
+	###Basic
+lab: https://portswigger.net/web-security/logic-flaws/examples/lab-logic-flaws-excessive-trust-in-client-side-controls
+La confianza en el usuario puede generar problemas de seguridad. En este caso el problemas se da a causa de que el precio esta en cleartext en la request.
+Esto puede ser modificado para que se tome como precio real uno que no es el del producto. Basta con cambiar el precio al agregarlo al carrito para que suceda esto.
+
+lab:https://portswigger.net/web-security/logic-flaws/examples/lab-logic-flaws-high-level
+Lo anterior esta solucionado pero esta vez el problema esta en la cantidad de items que se pueden agregar al carrito siendo posible un nro negativo generando
+que el precio vaya hacia abajo. De esta forma se puede comprar algo con un precio menor al estipulado.
+
+lab: https://portswigger.net/web-security/logic-flaws/examples/lab-logic-flaws-inconsistent-security-controls
+En este lab se ve un problema de falta de controles donde con simplemente cambiar el mail al dominio de la empresa, ya te permite entrar al panel de admin
+al que tienen accesos todas las personas con mail @empresa.com
+
+lab: https://portswigger.net/web-security/logic-flaws/examples/lab-logic-flaws-flawed-enforcement-of-business-rules
+La pagina tiene cupones, podes tener hasta 2 y no te deja ingresar de nuevo el ultimo agregado. Al solo verificar sobre el ultimo agregado, si tenes 2 cupones
+vas alternando entre 1 y otro para poder obtener el descuento total del producto.
+
+
+
+
+
+
+
