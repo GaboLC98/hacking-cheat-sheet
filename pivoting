@@ -224,5 +224,6 @@ SocksOverRDPx64.zip o SocksOverRDP-Server.exe tiene que pasarse a la maquina a l
 netstat -antb | findstr 1080
 #Verificamos que este escuchando
 
-A la maquina windows debemos pasar el archivo de descarga nro 1. Aca gif de como configurarlo en dicha maquina: https://academy.hackthebox.com/module/158/section/1439
-
+Ejecutamos en la windows 1 el link nro 1. Aca gif de como configurarlo en dicha maquina: https://academy.hackthebox.com/module/158/section/1439
+EN la windows 2 pasamos sockoverrdp server y lo ejectuamos
+Una vez hecho todo esto, ejecutamos mstsc.exe nuevamente para conectarnos a la maquina que queremos pivotar (windows 3). A la cual solo llegamos usando como intermedio a windows 2

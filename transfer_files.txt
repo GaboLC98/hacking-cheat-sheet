@@ -58,6 +58,12 @@ net use * \\<host>\<disco> /user:/<domain>\<user>
 Copy-Item <path_from> <path_to>
 #Copiamos de un disco a otro disco 
 
+net use * \\hostname.dominio\C$ /user:dominio\user
+#Nos conectamos a una maquina mediante su usr y password (se solicita despues) asignandole el disco Z:\
+#Luego de esto, podemos pasar archivos a la maquina
+#Solo desde y hacia maquinas windows
+
+
 ---     Download to linux       ---
     Base64
 echo 'base64_string | base64 -d > output_file'
