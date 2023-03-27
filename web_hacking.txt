@@ -70,8 +70,48 @@ La pagina tiene cupones, podes tener hasta 2 y no te deja ingresar de nuevo el u
 vas alternando entre 1 y otro para poder obtener el descuento total del producto.
 
 
+	####Access control vulnerabilities
+	###Basic
+lab: https://portswigger.net/web-security/access-control/lab-unprotected-admin-functionality
+En robots.txt esta el admin panel. Dicho panel es accesible para todos
 
+lab: https://portswigger.net/web-security/access-control/lab-unprotected-admin-functionality-with-unpredictable-url
+robots.txt no esta o no es accesible. El panel de admin esta en el codigo de la apagina (ctrl + u) como una sentencia if
 
+lab: https://portswigger.net/web-security/access-control/lab-user-role-controlled-by-request-parameter
+Interpectando con burpsuite, se puede ver como al loguearnos aparece una cookie de admin:false en la respnse. Cambiando a true se puede acceder al panel.
 
+lab: https://portswigger.net/web-security/access-control/lab-user-role-can-be-modified-in-user-profile
+Al cambiar el mail, si vemos la response se puede ver un "roleid":1. Si al json donde se encuentra el nuevo mail le agregamos "roleid":2, en la response
+va a venir el roleid en 2, no en uno. Una vez hecho esto nos aparece el panel de admin.
+
+lab: https://portswigger.net/web-security/access-control/lab-user-id-controlled-by-request-parameter
+EL perfil del usuario posee una API key y un parametro en la URL para el usuario. Si se cambia el usuario se puede ver la API key de dicho usr.
+
+lab: https://portswigger.net/web-security/access-control/lab-user-id-controlled-by-request-parameter-with-unpredictable-user-ids
+La idea es la misma que el anterior pero en vez de nombres usa un ID imposible de adivinar. Dicho ID es exfiltrado en los post que hace el usuario donde en el link al perfil se encuentra
+el ID de el usuario que creo la entrada del blog. Cambiando ese ID se puede ver la API key del usr
+
+lab: https://portswigger.net/web-security/access-control/lab-user-id-controlled-by-request-parameter-with-data-leakage-in-redirect
+La api key la encontramos en el redirect que nos hace hacia el login cuando intentamos cambiar el parametro de la URL al usr carlos.
+
+lab: https://portswigger.net/web-security/access-control/lab-user-id-controlled-by-request-parameter-with-password-disclosure
+Se puede resolver de dos formas. Al ir al perfil de la cuenta, nuevamente se puede cambiar de usuario mediante la url. 
+En el perfil se encuentra la password en formato password, se puede:
+1: Interceptar la response mediante burp y verlo en texto claro
+2: Inspeccionar elemento y cambiar el type:"password" a type:"text"
+
+lab: https://portswigger.net/web-security/access-control/lab-insecure-direct-object-references
+Se puede descargar la transcricpion de los chats. Dicha descarga se hace mediante una request que se puede editar generando asi poder descargar transcripciones de otras personas.
+En este caso, descargo un chat donde carlos decia su password.
+
+	###File upload vulnerabilities
+	##Basic
+lab: https://portswigger.net/web-security/file-upload/lab-file-upload-remote-code-execution-via-web-shell-upload
+Se puede subir un php como imagen. Al ir hacia la ubicacion donde se almacena podemos usarlo de shell. Shell usada: <?php system($_GET["cmd"]); ?>
+
+lab: https://portswigger.net/web-security/file-upload/lab-file-upload-web-shell-upload-via-content-type-restriction-bypass
+Similar al anterior pero se filtra lo que se puede subir. Para bypasear esto solo se debe ver la request de subida de archivo y cambiar el content-type a image/jpeg y dejar la extension del archivo como php.
+Una vez hecho esto, la pagina acepta exploit y podemos usarlo.
 
 
