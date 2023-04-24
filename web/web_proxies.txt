@@ -1,4 +1,4 @@
-####Web proxiees
+	####Web proxiees
 	###Definiciones
 Las aplicaciones web y moviles funcionan haciendo request a servidores, estas request, si se las quiere auditar, deben ser interceptadas mediante un proxy.
 Un proxy es un tool que puede ponerse entre el navegador o aplicacion mobile y el servidor con el cual se comunican para capturar estas comunicaciones.
@@ -20,4 +20,25 @@ Modificar una response es importante para poder cambbiar la forma en la cual el 
 	##Modificar automaticamente
 Las modificaciones automaticas en burp suite nos permite pode modificar cualquier request o response sin hacerlo de forma manual. Para los casos anteriores bastaria con dirigirnos a opciones avanzadas y agregar una regla para response o par request, generando asi que al matchear la regla con lo interceptado, es modificado. De esta forma podemoos cambiar el user agent de la request o el type=xxx de la response.
 
+	##Encode & decode
+Burpsuite nos permite encodear y decodear. Por lo general esto nos va a ser util para al menos encodear los key characters. Para ello, en una request (o response modificada) hacemos click derecho, encode y seleccionamos la opcion que queremos (todo o key characters).
+Tambien es posible usr la funcion (tab) para encodear/decodear y poder hacerlo con texto de forma rapida permitiendo decodear varias veces un string de distintas formas y en varias etapas.
+
+	##Command line proxies
+Se puede usar proxies de command line para mandarlo a brupsuite.
+	#Proxychains
+En este caso se debe modificar el /etc/proxychains.conf y agregar debajo de socks (previamente comentado) la ip (127.0.0.1:8080) utilizada por burp. Una ves realizado esto, cualquier curl corrido cpon proxychains va a ir a burpsuite
+	#nmap
+Nmap tambien tiene la opcion de proxyes. Es experimental y puede no funcionar para todos los casos. De todas formas la sintaxis es la siguiente:
+nmap --proxies http://127.0.0.1:8080 SERVER_IP -pPORT -Pn -sC
+#nmap -h | grep -i prox para ver la ayuda
+	#msf
+Una vez seleccionado el auxiliar o lo que sea a usar se debe setear el proxi
+set PROXIES HTTP:127.0.0.1:8080
+#Se setea para que vaya a burp
+
+	##Fuzzing
+Burp suite tiene opcion para realizar fuzzing como gobuster mediante responder. Se pueden marcar 1 o mas parametros en los que fuzear, establecer diferentes reglas y hasta hashear, encodear, etc lo que se fuzzea para que las request que mandamos sean necesarias.
+Un ejemplo de esto es el fuzzear con una lista de usuarios hasheando los nombres a md5 para pasar ese hash como cookie.
+Intruder permite agregarle cosas a los payloads como en prefix, ecnodear o hasta hashear. Esto puede tocarse en la parte de payload processing
 

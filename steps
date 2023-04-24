@@ -1,9 +1,0 @@
-1- Enumerate the target
-2- Scan version and services
-3- Search for vulnerable versions
-4- Try to connect to services (if it possible)
-	HTTP Server? 
-5- Go to web page, see and reed everything.
-6- Fuzz
-7- vhost?
-8- Verions

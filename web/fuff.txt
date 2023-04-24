@@ -1,0 +1,20 @@
+#### ATTACKING WEB APPLICATIONS WITH FFUF
+	###Definiciones
+Aclaracion: Fuzzing tambien fue tocado en el txt de web proxy.
+Fuff es un tool usado para fuzzear paginas web para la busqueda de directorios, archivos, extensiones, vhosts, etc.
+
+	###Directory fuzzing
+ffuf -w /wordlist/list.txt:FUZZ -u http://SERVER_IP:PORT/FUZZ
+#De esta forma especificamos la wordlist dandole la variable FUZZ y con -u le indicamos la ip y, a su vez, donde se realizaria el remplazo.
+
+-t 200
+#Usado para aumentar los hilos a 200. No es recomendable. Aun asi, en laboratorios tipo HTB puede usarse y hacer mas rapidos los escaneos
+
+	###File fuzzing
+ffuf -w /wordlist/web-extensions.txt:FUZZ -u http://SERVER_IP:PORT/blog/indexFUZZ
+#De esta forma podemos fuzzear por extension de archivos. En este caso buscamos un index.extension
+
+ffuf -w /wordlist/web-extensions.txt:FUZZ -u http://SERVER_IP:PORT/blog/FUZZ.php
+#Buscamos todos los archivos que puedan contener la extension php
+
+
