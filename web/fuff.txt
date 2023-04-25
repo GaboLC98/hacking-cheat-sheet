@@ -17,4 +17,46 @@ ffuf -w /wordlist/web-extensions.txt:FUZZ -u http://SERVER_IP:PORT/blog/indexFUZ
 ffuf -w /wordlist/web-extensions.txt:FUZZ -u http://SERVER_IP:PORT/blog/FUZZ.php
 #Buscamos todos los archivos que puedan contener la extension php
 
+	###Recursividad
+ffuf -w /wordlist/directory-list-2.3-small.txt:FUZZ -u http://SERVER_IP:PORT/blog/FUZZ.php -recursion -recursion-depth 1 -e .php 
+#Mediante -recursion activamos la recursion y con -recursion-depth NUMERO especificamos el nivel de sub firectorios o archivos a fuzzear.
+#Con -e se le puede pasar la extension con la cual buscar recursivamente
 
+	###Fuzzing DNS
+ffuf -w /wordlist/subdomains-top1million-5000.txt:FUZZ -u https://FUZZ.hackthebox.eu/
+#De esta forma vamos a consultar por subdoominios publicos del dominio principal
+
+	##Vhost
+Un vhost hace referencia a un subdominio pero que se encuentra en el mismo servidor, teniendo de esta forma la misma IP.
+Sirve para intentar identificar subdoominios no publicos.
+Parar hacer esto se debe hacer fuzzing sobre el header (-H).
+
+ffuf -w /wordlist/subdomains-top1million-5000.txt:FUZZ -u http://academy.htb:PORT/ -H 'Host: FUZZ.academy.htb'
+#Como se explico arriba, se pasa la direccion url y lo que se fuzzea es el header donde esta el host.
+#Siempre vamos a recibir 200 OK en este caso, por eso hay que prestar atencion al size
+Es muy importante, en caso de ser necesario, no olvidarse del puerto. A su vez, agrregar los vhost encontrados a /etc/host para routear el dominio a la IP
+
+-fs NUMERO
+#De esta forma se puede bloquear los size especioficados en NUMERO.
+
+	###Fuzzing parametros
+	##GET
+ffuf -w /wordlist/burp-parameter-names.txt:FUZZ -u http://admin.academy.htb:PORT/admin/admin.php?FUZZ=key -fs xxx
+#Tan simple como lo que se lee arriba. Se fuzzea en el parametro para ver que es aceptado
+	
+	##POST
+Las peticiones POST no se mandan en URL sino con la data en la request HTTP.
+Tip: In PHP, "POST" data "content-type" can only accept "application/x-www-form-urlencoded". So, we can set that in "ffuf" with "-H 'Content-Type: application/x-www-form-urlencoded'".
+
+ffuf -w /wordlist/burp-parameter-names.txt:FUZZ -u http://admin.academy.htb:PORT/admin/admin.php -X POST -d 'FUZZ=key' -H 'Content-Type: application/x-www-form-urlencoded' -fs xxx
+#Con -X le decimos el metoodo y coon -d la data que mandamoos en el HTTP. -H leer tip
+
+curl http://admin.academy.htb:PORT/admin/admin.php -X POST -d 'id=key' -H 'Content-Type: application/x-www-form-urlencoded'
+#Para testear lo que obtuvimos, se puede usar curl y asi ver cual es la response.
+
+	###Custom wordlist
+Teniendo en cuenta el ejemplo anteror donde el POST valido es un ID. Deberiamos intentar fuzzear lso ids.
+
+for i in $(seq 1 1000); do echo $i >> ids.txt; done
+#For para armar un txt con numeros
+#Ahora, con solo cambiar la lista se puede intentar correr el fuff de POST nuevamente
