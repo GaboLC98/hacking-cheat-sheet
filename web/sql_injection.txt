@@ -63,6 +63,10 @@ El problema que debemos pasar ahora es la de saber la cantidad de columnas que p
 
 	#Order by
 Gracias a ordenar mediante X columna podemos intentar ir ordenando por la columna 1, luego la 2 y asi sucesivamente hasta encontrarnos con un error. Ese error nos indica que la cantidad de columnas fue superada.
+De esta forma se nos permite saber la cantidad de columnas totales para aplicar un UNION.
+
+[!] Es importante probar esto y el union cuando se buscan (por ej) usuarios mediante parametro id de una url para asi poder intentar hacer un UNION [!]
+
 ' order by 1-- -
 ' order by 2-- -
 

