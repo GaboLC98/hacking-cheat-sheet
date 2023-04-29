@@ -1,0 +1,98 @@
+	####SQLi
+	###Definiones
+Todas las aplicaciones actualmente usan una base de datos para consultar y dar datos.
+Las consultas a las bases de datos son realizadas mediante el input de los usuarios, siendo posible que esto pueda ser aprovechado por alguna persona malisiosa.
+SQL injection se refiere a ataques contra base de datoos relacionables, mientras que contra no relacionables con MongoDB son NoSQLi.
+
+Las bases de datos relacionales son aquellas que poseen diferentes tablas las cuales pueden ser unidas mediante alguna columna. De esta forma, si tenemos clientes y productos, se puede saber que compro cada uno mediante el ID de cliente y el ID de producto junto con la cantidad.
+Las bases de datos no relacionales no tienen una estructura como lo anterior de tablas, columnas, filas etc. El almacenamiento se da con datos que no estan muy bien definidos ni estructurados. Esto se hace mediante key:value. Una clave que identifica los datos que se almacenan pero que entre ellos noo tiene una relacion o estructura especifica.
+
+Se utilizan metodos diferentes para la injection de bases de datos SQL y NoSQL. Esta cheatsheet es para bases de datos SQL.
+
+	###MySQL: Intro
+	##Conexion
+mysql -u <usuario> -p <passoword>
+#No es recomendable pasar la psw como parametro.
+mysql -u <usuario> -h <host remoto> -P <puerto> 3306 -p 
+
+	##Creacion y manejo de base de datos
+CREATE DATABASE <nombre>;
+#Crear db
+
+SHOW DATABASES;
+#Ver las bases de datos
+
+USE <db name>;
+#Usar X db
+
+CREATE TABLE <name> (
+    id INT,
+    username VARCHAR(100),
+    password VARCHAR(100),
+    date_of_joining DATETIME
+    );
+#Se crea una tabla en la db con el dato y tipo.
+#Estas creaciones pueden tener mas parametros como:
+ id INT NOT NULL AUTO_INCREMENT,
+#De esta forma se setea el id como un numero entero no nulo (no vacio) que se autoincrementa.
+ username VARCHAR(100) UNIQUE NOT NULL,
+#Nos aseguramos que no haya dos usuarios iguales y no nulos.
+ date_of_joining DATETIME DEFAULT NOW(),
+
+ PRIMARY KEY (id)
+#Por ultimo existe un parametro KEY fundamental para poder identificar de formra unica cada registro de la tabla. En este caso se lo define como el ID
+
+CREATE TABLE logins (
+    id INT NOT NULL AUTO_INCREMENT,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    date_of_joining DATETIME DEFAULT NOW(),
+    PRIMARY KEY (id)
+    );
+#Quedaria tal que asi
+
+SHOW TABLES;
+#Consultar tablas de la db
+
+DESCRIBE <table>;
+#Muestra como es la tabla.. O sea valores que toma, etc
+
+INSERT INTO table_name VALUES (column1_value, column2_value, column3_value, ...);
+#Insertar en la tabla X los valores. En el caso de mas arrriba se ingresaria ID, name, etc
+INSERT INTO logins(username, password) VALUES('administrator', 'adm1n_p@ss');
+#Como el ID se autoincrementa y el DATE se agrega solo, se pueden skipear esos valores.
+INSERT INTO logins(username, password) VALUES ('john', 'john123!'), ('tom', 'tom123!');
+#Se pueden añadir mas de 1
+
+SELECT * FROM table_name;
+#Para ver todos los datos de una tabla
+SELECT username,password FROM logins;
+#Parra ver ciertas columnas de la tabla
+SELECT * FROM logins LIMIT 2;
+#Ver solo dos resultados
+SELECT * FROM logins LIMIT 1, 2;
+#Ver 2 resultados con offset
+SELECT username,password FROM logins;
+#Remover tablas o dbs
+SELECT * FROM logins ORDER BY password;
+SELECT * FROM logins ORDER BY password DESC;
+SELECT * FROM logins ORDER BY password DESC, id ASC;
+#Sorting los resultados
+SELECT * FROM table_name WHERE <condition>;
+#Seleccionar con condicion where
+SELECT * FROM logins where username = 'admin';
+#Ej de where
+SELECT * FROM logins WHERE username LIKE 'admin%';
+#Busco entradas parecidas a la palabra admin
+
+
+
+ALTER TABLE logins ADD newColumn INT;
+ALTER TABLE logins RENAME COLUMN newColumn TO oldColumn;
+ALTER TABLE logins MODIFY oldColumn DATE;
+ALTER TABLE logins DROP oldColumn;
+#ALTER sirve para realizar modificaciones.
+
+UPDATE table_name SET column1=newvalue1, column2=newvalue2, ... WHERE <condition>;
+#ALTER es para cambiar las propiedades de la tabla. UPDATE sirve para modificar los valores
+UPDATE logins SET password = 'change_password' WHERE id > 1;

