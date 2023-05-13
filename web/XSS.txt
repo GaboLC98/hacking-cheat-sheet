@@ -51,6 +51,8 @@ Por lo gral estas funciones pueden ser vistas en un script.js siendo llamadas co
 Para estos casos es recomendable usar otrro tipo de payloads de pruebba
 <img src="" onerror=alert(window.origin)>
 #Este payload crea una nueva imagen HTML que posee el atributo onerror que se ejecuta cuando la imagen no es encontrada. Funciona como el <script>
+"></select><img%20src=1%20onerror=alert(1)>
+#Simlar al anterior. Crea una alerta
 
 ### Descubrimiento de XSS
 Todo lo anterior puedee ser una forrma de entender e intentar descubir un XSS. Aun asi existen erramientas que nos ayudan a encontrarlo.
