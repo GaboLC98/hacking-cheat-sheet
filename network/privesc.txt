@@ -6,7 +6,8 @@ https://gtfobins.github.io/#
 	#Comandos basicos
 su <user>
 #Cambiar de usuario con la pswd del usr
-
+chmod u+s /bin/bash
+#SUID a bin bash
 sudo -l
 #Ver privilegios asignados y que podemos correr como sudo sin pswd
 
