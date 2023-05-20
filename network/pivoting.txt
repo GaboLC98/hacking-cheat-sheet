@@ -11,8 +11,10 @@ Para graficar: excalidraw
 ##Local port forwarding
 ssh -L 1234:localhost:3306 Ubuntu@10.129.202.64
 #Recibo en mi puerto 1234 todo lo que el servidor recibe en su 3306
+#Sirve cuando la maquina tiene un puerto abierto en localhost no expuesto.
 nmap -v -sV -p1234 localhost
 #Verifico dicho port forwarding
+-> Ahora que tengo el puerto en mi local host puedo fuzzear, escanear, etc
 
 ##	Dynamic port forwarding
 ssh -D 9050 ubuntu@10.129.202.64

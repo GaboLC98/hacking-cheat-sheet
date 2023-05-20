@@ -1,0 +1,8 @@
+	#### Attacking docker
+
+### Container breakout
+capsh --print
+#Podemos ver las capabilities con las que contamos en el contenedor y busscarlas para ver si se puede usar para nuestro objetivo
+-> cap_sys_module siendo root en el docker, permite convertirte en root en la mquina host
+#En el caso de esta capability existen shells que pueden ser usadas para poder hacer breakout
+

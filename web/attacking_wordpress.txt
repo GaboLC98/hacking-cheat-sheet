@@ -1,0 +1,21 @@
+	#### Attacking Wordpress
+
+	### User enumeration
+searchsploit wordpress user enumeration
+#Nos muestra un script en php para enumerar usuarios
+curl -s -X GET <url>/wp-json/wp/v2/users
+#Ruta que consulta el script. De esta forma podemos ver si responde con un json
+
+	### Plugins
+Si bien el wordpress que se usa puede no tener vulnerabilidades conocidas, existe la posibilidad que se este usando un plugin que si tiene vulnerabilidades conocidas.
+
+/wp-content/plugins
+#En esta ubicacion suelen estar los plugins que se usan
+#Estos podrian verse sin bruteforcear si el directory listing esta habilitado
+Discovery/Web-Content/CMS/wp-plugins.fuzz.txt
+#Path para diccionario de plugins wp
+
+	### Archivos importantes
+wp-config.php
+#Es un archivo en word press que suele tener credenciales de base de datos y contraseñas.
+
