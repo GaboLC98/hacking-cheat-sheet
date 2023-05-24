@@ -1,0 +1,48 @@
+	#### File uploads
+Las vulnerabilidades por subida de archivo se dan por falta en el control y validacion de lo que se esta subiendo dando como resultado la posibilidad de ejecutar comandos en el servidor web.
+
+	### Bypassing
+## Front-end validation
+En estos casos la validacion se genera en el front-end y no en eel backend. Esto genera que se pueda cambiar la extension del archivo con un proxy y asi subir archivos que no se deberian poder subir.
+A la pagina se le da un archivo .jpg .png o el que este esperando, se intercepta la request y luego se cambia la extension.
+-> Si la validacion es por front-end tambien puede modificarse inspeccionando el codigo de la pagina.
+
+## Blacklist Filters
+En estos casos la extension es validada en el servidor. De todas formas, esta validacion puede no contemplar ciertos tipos de archivos los cuales pueden llegar a ser ejecutados en el servidor.
+De esta forma podemos enviar la request a intruder para asi fuzzear entre las diferentes extensiones.
+
+Diccionarios utiles:
+Seclist - Web extentions (https://github.com/danielmiessler/SecLists/blob/master/Discovery/Web-Content/web-extensions.txt)
+PHP - https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Upload%20Insecure%20Files/Extension%20PHP/extensions.lst
+.NET - https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Upload%20Insecure%20Files/Extension%20ASP
+
+## Whitelist Filters
+Es una tecnica mas segura que la anterior pero, nuevamente puuede llegar a pasarse con una serie de tecnicas como pueden ser:
+
+Doble extension: shell.jpg.php
+Reverse doble extenssion: shell.php.jpg
+#Es muy importante intentar los casos anteriores con diferentes extensiones como: phtml,phpt,php3,etc
+Character injection:
+			%20
+			%0a
+			%00
+			%0d0a
+			/
+			.\
+			.
+			…
+			:
+Consta de agregar estos caracteres para mal interpretar la extension del archivo.
+
+## Type Filters
+Los filtros pueden ir mediante el tipo de archivo que se esta subiendo. En estos casos, el control pasa por (y no necesariamente unicamente) el Content-type.
+Content-Type: image/jpg
+#Para bypasear esto debe agregarse el anterior string antes del contenido, simulando que el mismo sea una imagen.
+
+## MIME-Type
+Funciona similar al anterior pero se controla los primeros bytes del contenido del archivo.
+https://en.wikipedia.org/wiki/List_of_file_signatures
+https://opensource.apple.com/source/file/file-23/file/magic/magic.mime
+Como se puede ver, lo mas facil es usar GIF puesto que lo que utiliza en el contenido es tan solo la palabra GIF87a o GIF89a dando como resultado que se pueda poner solo GIF8 para que el contenido sea validado.
+
+
