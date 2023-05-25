@@ -25,6 +25,9 @@ cat /etc/crontab, cat /var/spool/cron
 ps -eo command
 #Lista comandos que se ejecutan en el sistema
 #pspy puede servir para poder ver tareas o cosas que se ejecutan con los usrs
+find / -type f -name "doas.conf" 2>/dev/null
+#Busca por la configuracion de doas. Permite ejecutar comandos como otro usuario (root como default)
+#En dicha configuracion puede estar establecido que se puede ejecutar con X usuario como root sin password. Es parecido a sudo -l
 
 	### Path hijacking
 #Si encontramos un SETENV: quiere decir que, antes del script que se puede ejecutar como sudo sin pswd, podemos agregar un ENV.

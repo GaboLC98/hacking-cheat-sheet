@@ -194,5 +194,5 @@ Aun asi, se debe intentar buscar por:
 /proc/<dir numero>/cmdline
 #Cada proceso (pid) que existe en la ruta tiene un cmdline que puede contener informacion sensible de cuando el proceso fue ejecutado
 #Para saber dichos numeros se puede brutforcear con algun script
-/etc/apache2/site-enabled/00-default.conf
+/etc/apache2/sites-enabled/000-default.conf
 #Archivo con posible informacion acerca del host donde pueden haber dominios, subdominios, etc.
