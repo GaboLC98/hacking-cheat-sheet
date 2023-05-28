@@ -34,6 +34,14 @@ Character injection:
 			:
 Consta de agregar estos caracteres para mal interpretar la extension del archivo.
 
+## Fuzzing
+Burpsuite es un tool perfecto para provar payloads.
+Prueba 1: name.FUZZ.jpg
+Prueba 2: name.jpg.FUZZ
+Prueba 3: agregar contentype
+Prueba 4: agregar MIME
+-> IMPORTANTE: Intentar subir una imagen jpg real e ir eliminando el contenido hasta que la misma de error. De esta forma vamos a conocer los bytes necesarios para que sea reconocida como imagen (MAS INFO abajo)
+
 ## Type Filters
 Los filtros pueden ir mediante el tipo de archivo que se esta subiendo. En estos casos, el control pasa por (y no necesariamente unicamente) el Content-type.
 Content-Type: image/jpg
