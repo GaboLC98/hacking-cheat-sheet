@@ -52,6 +52,11 @@ ps- faux | grep <puerto encontrado en netstat>
 #Al estar en el localhost, es posible de esta forma encontrar el directorio en el cual se encuentra la pagina e intentar buscar info que nos sea importante
 #Tambien, dependiendo el caso, se podria hacer pivoting. Ver txt sobre el tema
 
+	### Croonjobs
+pspy (https://github.com/DominicBreuker/pspy)
+#Es un tool que permite ver las tareas que se ejecutan en un sistema en X tiempo.
+#upx <file>
+#Para bajarle el peso al aarchivo
 
 	#### Windows
 https://lolbas-project.github.io/#

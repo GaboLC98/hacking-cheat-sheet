@@ -1,4 +1,10 @@
-####DNS
+	####DNS
+###Host name
+nslookup
+server <ip>
+<ip>
+#Se configura el server como la ip y luego se consulta por la ip para poder obtener el dominio
+
 ###ZONAS
 ##Definiciones
 Los servidores DNS tienen diferentes registros para poder trabajar correctamente.
