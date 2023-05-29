@@ -1,0 +1,8 @@
+	#### Open redcirect
+?redirect=XX
+#Paginas con este parametro o similares pueden ser vulnerables a open redirect, lo que genera una consulta del servidor a donde querramos si no esta bien validado.
+
+### Redirecto to XSS
+Open redirect puede terminar en un XSS
+?redirect=javascript:alert()
+#Esto es bueno para un XSS en donde se le deba mandar a otra persona (Reflected XSS. Ver XSS.txt)

@@ -14,3 +14,5 @@ NoSQL son bases de datos no relacionales distintas a las SQL. Tienen diferente s
 
 [$regex]
 #Sirve para especificar como empieza. Ej: username[$regex]=a.* -> Esta diciendo que el usuario arranca con a lo que seria true si el usuario seria (por ej) admin
+
+
