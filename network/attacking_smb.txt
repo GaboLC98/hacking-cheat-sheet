@@ -1,0 +1,28 @@
+	#### SMB
+
+### Enumeracion
+
+## Crackmapexec
+crackmapexec <ip>
+#Obtener info del smb como domain, os
+crackmapexec smb <ip> -u <diccionario> --no-bruteforce
+#Permite probar por cada linea en el diccionario, la password igual a -u (o sea jsmit:jsmiith por ejemplo)
+crackmapexec smb -u <diccionario> -p <diccionario>
+#Bruteforcea a cada user, la password. Se le puede pasar str en vez de diccionarios
+crackmapexec smb -u .. -p .. --shares
+#Permitie ver los shares y los permisos quie se tienen sobre ellos con el usuario X
+
+## smbclient
+smbclient -L <ip> -N
+#Permite enumerar recursos compartidos mediante un null session -> Puede llegar a no devolver recursos
+
+## smbmap
+smbmap -u <"usr"> -p <"pswd">
+#Permite ver recursos compartidos (similar a crackmapexec)
+smbmap -u -p -r <share>
+#Permite enumerar el share especificado con /X se puede seguir enumerando mas adentro
+-> Para que sea mas facil se puede crear una montura
+mkdir <nombre>
+mount -t cifs //<ip>/share <dir <nombre>> -o username=<user>,password=<pswd>,domain=domain.local,rw
+#Se crea una carpeta en donde se va a realizar la montura especificada en mount. Con el parametro rw del final se establece como read and write
+

