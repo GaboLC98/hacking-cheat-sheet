@@ -1,0 +1,12 @@
+	#### HTTP verb tampering
+Verb hace referencia al metodo HTTP: GET, POST, PUT, DELETE, OPTIONS y PATCH
+
+## Mala configuracion
+curl -i -X OPTIONS "url"
+#Permite ver los verbs aceptados por el servidor
+#Esto nos permite ver si los metodos usados estan bien configurados o no, puesto que alguno de ellos nos puede llegar a permitir realizar una accion que por otro metodo (el deseado) no esdta permitida
+
+## Mal desarrollo
+Change request method > Burp suite
+#En burp suite existe la posibilidad de cambiar de forma simple el tipo de request de GET a POST, de esta forma si la validacion del input se realizo en el metodo 1, y no en el 2, esta podria ser saltada generando que por algun otro metodo que no es el default de la request pueda haber algun tipo de inyeccion de comandos, sql, etc.
+
