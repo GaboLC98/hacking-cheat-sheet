@@ -1,0 +1,7 @@
+	#### Attacking NFS
+
+showmount -e <ip>
+#Saber directorios en el servidor para poder montarlos
+mount -t nfs <ip>:<directorio_remoto> <ruta_local>
+#Montar el directorio de la maquina de forma local para poder listar los contenidos
+

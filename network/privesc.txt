@@ -14,6 +14,7 @@ chmod u+s /bin/bash
 #SUID a bin bash
 sudo -l
 #Ver privilegios asignados y que podemos correr como sudo sin pswd
+#Podemos ejecutar sin pswd? -> Ver privilegios del binario/archivo
 
 	### Comandos de busqueda
 ps -faux
@@ -66,13 +67,17 @@ pspy (https://github.com/DominicBreuker/pspy)
 https://lolbas-project.github.io/#
 #Binarios windows
 
-### Comandos basicos
+### Comandos de busqueda
 net user <user>
 #Nos muestra la informacion de nuestro usuario: nombre, grupo, etc
 net localgroup <nombbre local group>
 #Nos muetra info del grupo, comentario, etc
 whoami /priv
 #Permite lista los privilegios
+whoami /all
+#Muestra toda la info dde nuestro perfil de usr
+tasklist
+#Procesos corriendo en el sistema
 
 reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
 #Enumerar registros de Windows
