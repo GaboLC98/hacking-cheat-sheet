@@ -1,8 +1,8 @@
 	#### Ldap
 
 ### Enumeracion
-ldapsearch -x -h <ip> -b "DC=domain,DC=domain"
-#Un dominio es nombre.locaol, sabiendo esto la flag -b seria -b DC=nombre,DC=local
+ldapsearch -x -H ldap://<ip> -D "<dominio\usuario> o <usuario@dominio>" -w "contraseña" -b "DC=domain,DC=domain"
+#Un dominio que es (ej) nombre.local, la flag -b seria -b DC=nombre,DC=local
 #Esto nos permite obtener infomacion del dominio que puede brindarnos info privilegiada
 ldapsearch -x -h -b "DC=,DC=" | grep -i userprincipalname
 #Si aplicamos este filtro podemos obtener de formra mas limpia un output con usuarios. Aun asi, el output anterior es importante para ver la info privilegiada (si existe) de cada usuario

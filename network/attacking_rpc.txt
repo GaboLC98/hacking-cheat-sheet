@@ -1,4 +1,5 @@
 	#### RPC
+Permite loguearnos a una maquina obteniendo una consola
 
 ### Enumeracion
 rpcclient -U "" <ip> -N
@@ -14,7 +15,10 @@ enumdomusers
 enumdomgroups
 #De nuevo, una vez dentro de RPC puede ejecutarse el comando para enumerar los grupos del dominio
 querygroupmem 0x200
-#El 0x200 generalmente es para el grupo domain admin. Con el comando anterior se puede sacar los usuarios (rid) de quienespertenecen a dicho grupo
+#El 0x200 es el RID para el grupo domain admin. Con el comando anterior se puede sacar los usuarios (rid) de quienes pertenecen a dicho grupo
+queryuser <RID>
+#Obtener info del usuario mediante su RID
 querydispinfo
 #Permite enumerar la descripcion de los usuarios
+
 
