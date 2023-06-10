@@ -5,3 +5,7 @@ showmount -e <ip>
 mount -t nfs <ip>:<directorio_remoto> <ruta_local>
 #Montar el directorio de la maquina de forma local para poder listar los contenidos
 
+Sin permisos en la montura?
+useradd nombre
+usermod -u NUMERO NOMBRE
+#Se le asigna al usuario creado recien el numero que necesita para acceder a los directorios
