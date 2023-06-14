@@ -3,6 +3,7 @@
 Aclaracion: Fuzzing tambien fue tocado en el txt de web proxy.
 Fuff es un tool usado para fuzzear paginas web para la busqueda de directorios, archivos, extensiones, vhosts, etc.
 
+----------      ----------      ----------      ----------
 	###Directory fuzzing
 ffuf -w /wordlist/list.txt:FUZZ -u http://SERVER_IP:PORT/FUZZ
 #De esta forma especificamos la wordlist dandole la variable FUZZ y con -u le indicamos la ip y, a su vez, donde se realizaria el remplazo.
@@ -10,6 +11,7 @@ ffuf -w /wordlist/list.txt:FUZZ -u http://SERVER_IP:PORT/FUZZ
 -t 200
 #Usado para aumentar los hilos a 200. No es recomendable. Aun asi, en laboratorios tipo HTB puede usarse y hacer mas rapidos los escaneos
 
+----------      ----------      ----------      ----------
 	###File fuzzing
 ffuf -w /wordlist/web-extensions.txt:FUZZ -u http://SERVER_IP:PORT/blog/indexFUZZ
 #De esta forma podemos fuzzear por extension de archivos. En este caso buscamos un index.extension
@@ -17,11 +19,13 @@ ffuf -w /wordlist/web-extensions.txt:FUZZ -u http://SERVER_IP:PORT/blog/indexFUZ
 ffuf -w /wordlist/web-extensions.txt:FUZZ -u http://SERVER_IP:PORT/blog/FUZZ.php
 #Buscamos todos los archivos que puedan contener la extension php
 
+----------      ----------      ----------      ----------
 	###Recursividad
 ffuf -w /wordlist/directory-list-2.3-small.txt:FUZZ -u http://SERVER_IP:PORT/blog/FUZZ.php -recursion -recursion-depth 1 -e .php 
 #Mediante -recursion activamos la recursion y con -recursion-depth NUMERO especificamos el nivel de sub firectorios o archivos a fuzzear.
 #Con -e se le puede pasar la extension con la cual buscar recursivamente
 
+----------      ----------      ----------      ----------
 	###Fuzzing DNS
 ffuf -w /wordlist/subdomains-top1million-5000.txt:FUZZ -u https://FUZZ.hackthebox.eu/
 #De esta forma vamos a consultar por subdoominios publicos del dominio principal
@@ -39,6 +43,7 @@ Es muy importante, en caso de ser necesario, no olvidarse del puerto. A su vez, 
 -fs NUMERO
 #De esta forma se puede bloquear los size especioficados en NUMERO.
 
+----------      ----------      ----------      ----------
 	###Fuzzing parametros
 	##GET
 ffuf -w /wordlist/burp-parameter-names.txt:FUZZ -u http://admin.academy.htb:PORT/admin/admin.php?FUZZ=key -fs xxx
@@ -54,6 +59,7 @@ ffuf -w /wordlist/burp-parameter-names.txt:FUZZ -u http://admin.academy.htb:PORT
 curl http://admin.academy.htb:PORT/admin/admin.php -X POST -d 'id=key' -H 'Content-Type: application/x-www-form-urlencoded'
 #Para testear lo que obtuvimos, se puede usar curl y asi ver cual es la response.
 
+----------      ----------      ----------      ----------
 	###Custom wordlist
 Teniendo en cuenta el ejemplo anteror donde el POST valido es un ID. Deberiamos intentar fuzzear lso ids.
 

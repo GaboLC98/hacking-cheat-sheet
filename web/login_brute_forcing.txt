@@ -1,5 +1,6 @@
 ####Login Brute forcing
 
+----------      ----------      ----------      ----------
 	###Basic HTTP Auth Brute Forcing
 HTTP provee dos formas de autenticar a los usuarios:
 Basic HTTP Auth: Autentica usuarios al servidor HTTP. Usa el ID del usuario y la contraseña. En primera instacia el cliente envia la request sin info de authenticacion y el server responde con www-Authenticate header el cual le consulta al usuario por credenciales.

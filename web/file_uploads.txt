@@ -1,6 +1,7 @@
 	#### File uploads
 Las vulnerabilidades por subida de archivo se dan por falta en el control y validacion de lo que se esta subiendo dando como resultado la posibilidad de ejecutar comandos en el servidor web.
 
+----------      ----------      ----------      ----------
 	### Bypassing
 ## Front-end validation
 En estos casos la validacion se genera en el front-end y no en eel backend. Esto genera que se pueda cambiar la extension del archivo con un proxy y asi subir archivos que no se deberian poder subir.
@@ -54,6 +55,7 @@ https://opensource.apple.com/source/file/file-23/file/magic/magic.mime
 https://gist.github.com/leommoore/f9e57ba2aa4bf197ebc5
 Como se puede ver, lo mas facil es usar GIF puesto que lo que utiliza en el contenido es tan solo la palabra GIF87a o GIF89a dando como resultado que se pueda poner solo GIF8 para que el contenido sea validado.
 
+----------      ----------      ----------      ----------
 	### Limited file uploads
 En algunos casos, el upload puede estar bien implementado impidiendo que lo anterior sirva. Hay otras formas de realizar un file upload
 

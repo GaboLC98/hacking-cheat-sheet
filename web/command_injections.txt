@@ -7,6 +7,7 @@ Existen:
 -> SQL injection (ver txt propio)
 -> XSS/HTML injection (ver txt propio)
 
+----------      ----------      ----------      ----------
 ### Operadores
 La aplicacion web debe tener una funcionalidad que nos permita ingresar un input para poder aprovecharlo. De esta forma, si agregamos alguno de los str siguientes podriamos agregar un comando
 OPERADOR	STR	URL-encode	Comando que ejecuta
@@ -21,12 +22,15 @@ Sub-Shell	$()	%24%28%29	Both (Linux-only)
 
 Mas info y otros operadores es: https://academy.hackthebox.com/module/109/section/1034
 
+----------      ----------      ----------      ----------
 ### Front-end validation
 Las validaciones para evitar los input malintencionados o erroneos de los usuarios puede estar en diferentes lados
 
+----------      ----------      ----------      ----------
 ## Bypassing Front-end validation
 La validacion en el front-end se hace en el cliente, esta dentro del html de la web. Esta validacion es simple de saltearsela mediante un proxy. En este, podriamos intentar agregar cualquiera de los strings de mas arriba seguido de un comando para intentar bypasear esto y que el comando sea interpretado por el sistema.
 
+----------      ----------      ----------      ----------
 ### Bypassing blacklist
 Estas listas poseen los caracteres que no deben ser admitidos. El problema aca puede surgir en la no consideracion de alguno, de esta forma es una buena opcion fuzzear entre los diferentes operadores para ver cual es aceptado y cual no.
 Se puede usar burp intruder.
@@ -63,6 +67,7 @@ $@ o \
 ^
 #Es interpretado correctamente y bypasea la blacklist
 
+----------      ----------      ----------      ----------
 ### Command obfuscation
 ## Case manipulation
 CMD y PS no son keysensitive, generando que se pueda usar: whOami, WHOAMI, etc
@@ -86,6 +91,7 @@ bash<<<$(base64 -d<<<Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==)
 iex "$([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('dwBoAG8AYQBtAGkA')))"
 #Es igual que linux pero con otra sintaxis. Se encodea ( [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes('COMMAND')) ) y se le pasa el comando de arriba para decodearlo
 
+----------      ----------      ----------      ----------
 ### Evasion tools
 ## Bashfuscator -> LINUX
 git clone https://github.com/Bashfuscator/Bashfuscator

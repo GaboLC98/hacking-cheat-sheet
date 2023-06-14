@@ -8,6 +8,7 @@ Hay tre tipos de XSS:
 	-> DOM-based XSS
 Si bien los XSS hoy en dia no suelen salir del navegador y ejecutar codigo en el sistema, una vulnerrabilidad del navegador podria permitir que esto ocurra. Aun si, el impacto dentro del navegador puede ser alto en caso de robor de cookies por ejemplo.
 
+----------      ----------      ----------      ----------
 	### Stored XSS
 Es la mas critica por la persistencia que se genera. El codigo, en estos casos, es almacenado een la base de datos, generando que siempre que se muestre la pagina donde see encuentrra el codigo, este sera interpretado.
 La eliminacion del codigo no es simple, debe eliminarse directamente del backend.
@@ -25,12 +26,14 @@ La eliminacion del codigo no es simple, debe eliminarse directamente del backend
 <script>alert(document.cookie)</script>
 #Muestra la cookie
 
+----------      ----------      ----------      ----------
 	### Reflected XSS - No persistente
 Esto se da cuando nuestro XSS impacta en el backend generando que haya una respuesta sin filtrar o sanitizarr.
 Esto podemos probarlo cuando al ingrresar un input se noos devuelve un mensaje de error o de exito. Generalmente, si intentamos correr el <script></script> del ejemplo anterior, este funcionaria y en el mensaje de error o exito podriamos ver '' en donde iria nuestro output.
 -> Al no ser persistente, si la pagina se reecarga el mensaje no volveria a aparecer.
 Al no ser persistente, si queremos realizar el ataque a un usuario debemoos prestar atencion como se manda nueestro input. Si es un GET este viaja en la URL, con solo mandarle la URL y el GET XSS el usuario estaria ejecutando el XSS.
 
+----------      ----------      ----------      ----------
 	### DOM XSS - No persistente
 En reflected el XSS es enviado al servidor, en DOM, el XSS es interpretado de forma completa por el cliente mediante JavaScript.
 Cuando nuestro input es agregado en la URL pero con un # (ej: ?#task=test) quiere decir que el input es procesado en el lado del cliente mediante JavaScript y no llega al backend.
@@ -54,9 +57,11 @@ Para estos casos es recomendable usar otrro tipo de payloads de pruebba
 "></select><img%20src=1%20onerror=alert(1)>
 #Simlar al anterior. Crea una alerta
 
+----------      ----------      ----------      ----------
 	### Blind XSS
 Este tipo de XSS esta explicado en la parte de session hijacking despues de phishing
 
+----------      ----------      ----------      ----------
 	### Descubrimiento de XSS
 Todo lo anterior puedee ser una forrma de entender e intentar descubir un XSS. Aun asi existen erramientas que nos ayudan a encontrarlo.
 Algunos tools que sirven ademas de Burp pro y Nessus son XSS Strike, Brute XSS, and XSSer.
@@ -72,6 +77,7 @@ Por payloads consultar: PayloadAllTheThings o PayloadBox
 Aun asi, no siempre los payloads van a servirnos y se puede perder bastante tiempo probando uno a uno.
 La forma manual mas eficiente es revisar el codigo para entender como es tratado nuestro input y asi crear un payload. De esta forma, evitamos la perdida de tiempo que puede llegar a causar payloads basicos y conocidos como a su vez tools ya que los desarrolladores corren en sus paginas web tools para identificar vulnerabilidades y asi arreglarlo.
 
+----------      ----------      ----------      ----------
 	### Defacing
 Hace referencia a desfigurar un sitio web para que todos los usuarios lo vean de esa forma. Esto se logra mediante codigo JavaScript que permita modificar la pagina para que luzca como queremos.
 Para cambiar el aspecto se suelen utilizar:
@@ -96,6 +102,7 @@ document.getElementsByTagName('body')[0].innerHTML = "New Text"
 <script>document.getElementsByTagName('body')[0].innerHTML = '<center><h1 style="color: white">Cyber Security Training</h1><p style="color: white">by <img src="https://academy.hackthebox.com/images/logo-htb.svg" height="25px" alt="HTB Academy"> </p></center>'</script>
 #Este es un payload que con JQuery realizamos el cambio del body especificandole varios cambios que queremos como la foto, titulo, etc.
 
+----------      ----------      ----------      ----------
 	### Phishing
 Un XSS puede terminar en un phishing. Teniendo en cuenta el defacing de la seccion anterior, podria modificarse la pagina para que con el codigo que sigue a continuacion parezca un login
 
@@ -124,6 +131,7 @@ if (isset($_GET['username']) && isset($_GET['password'])) {
 </html>
 #Este codigo crea un index.php donde el usuario puede "aterrizar". A su vez, las credenciales se estan guardando en un archivo llamado creds.txt generando que todos los usr que se logueen aca guarden sus creddenciales en ese archivo
 
+----------      ----------      ----------      ----------
 	### Session hijacking
 La sesion de los usuario es mantenida en la mayoria de las aplicaciones web mediante cookies. Esto permite al usuario poder continuar con su sesion en diferentes momentos y sesiones del navegador.
 Sabiendo esto, si una persona maliciosa puede acceder a las cookies de sesion de un usuario este podria ser impersonado por la persona maliciosa.
