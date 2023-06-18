@@ -20,5 +20,3 @@ queryuser <RID>
 #Obtener info del usuario mediante su RID
 querydispinfo
 #Permite enumerar la descripcion de los usuarios
-
-

