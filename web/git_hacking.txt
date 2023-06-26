@@ -14,3 +14,5 @@ git log --oneline
 git show <identificador>
 #Permite ver el codigo de lo que fue commiteado llegando a poder ver info que no deberia estar.
 
+	###Dumpear repositorio
+https://github.com/arthaud/git-dumper
