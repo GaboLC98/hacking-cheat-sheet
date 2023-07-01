@@ -243,3 +243,6 @@ Get-DomainUser * -SPN | Get-DomainSPNTicket -Format Hashcat | Export-Csv .\ilfre
 Get-DomainUser testspn -Properties samaccountname,serviceprincipalname,msds-supportedencryptiontypes
 
 
+----------  ----------  ----------  ----------
+	### Enumerar ACLs
+

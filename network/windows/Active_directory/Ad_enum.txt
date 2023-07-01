@@ -63,3 +63,30 @@ Invoke-Inveigh Y -NBNS Y -ConsoleOutput Y -FileOutput Y
 #Si se usa el tool ya compilado en C#, se lo ejecuta y corre en default
 Con la tecla esc se puede salir de la consola y tipear HELP para que se nos muestra la ayuda con los comandos y cosas para habilitar
 
+----------	----------	----------	----------
+	### ACL
+Access list se refiere a los accesos que se tienen dentro de un AD. Estos accesos tienen politicas denominadas ACE.
+Los ACEs pueden ser Allowed, Deny y Audit. Esto es usado con los SACL (system access control list, un tipo de ACL) paara generar logs de que usr intento acceder a alguna entidad y objeto.
+Otro tipo de ACL es el DACL (Dictionary access control) el cual define a que usuario, grupo o proceso se le concede o deniega acceso a un determinado objeto.
+'https://academy.hackthebox.com/storage/modules/143/ACE_example.png' 
+
+Los ACL pueden ser abusados:
+ForceChangePassword	-> abusado con -> Set-DomainUserPassword
+	Permite restablecer la contraseña sin conocer previamente la actual
+
+Add Members		-> abusado con -> Add-DomainGroupMember
+GenericAll		-> abusado con -> Set-DomainUserPasswordoAdd-DomainGroupMember
+	Genera control total sobre un objeto. Dependiendo si esto se otorga a un usr o grupo, se podria abusar para realizar cambios de contraseña o como el caso siguiente, kerberoasting
+	
+GenericWrite		-> abusado con -> Set-DomainObject
+	Permite darnos acceso para escribir sobre cualquier objeto generando que si tenemos un usr con esto hahbilitado, podamos asignarle un SPN y hacer kerberoastin.
+	En el caso de que el entorno use LAPS, se podria llegar a ver contraseñas de otros usuarios.
+
+WriteOwner		-> abusado con -> Set-DomainObjectOwner
+WriteDACL		-> abusado con -> Add-DomainObjectACL
+AllExtendedRights	-> abusado con -> Set-DomainUserPasswordoAdd-DomainGroupMember
+Addself			-> abusado con -> Add-DomainGroupMember
+	Muestra grupos de seguridad a los que el usr puede agregarse
+'https://academy.hackthebox.com/storage/modules/143/ACL_attacks_graphic.png'
+*Img que ejemplifica como atacar ciertos ACL's en win o lin
+*Como enumerar esto en la txt de windows
