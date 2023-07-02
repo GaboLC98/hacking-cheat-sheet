@@ -5,6 +5,7 @@ https://gtfobins.github.io/#
 find / -perm -4000 2> /dev/null
 #Binarios con SUID
 
+----------      ----------      ----------      ----------
         ### Comandos basicos
 su <user>
 #Cambiar de usuario con la pswd del usr
@@ -14,6 +15,7 @@ sudo -l
 #Ver privilegios asignados y que podemos correr como sudo sin pswd
 #Podemos ejecutar sin pswd? -> Ver privilegios del binario/archivo
 
+----------      ----------      ----------      ----------
         ### Comandos de busqueda
 ps -faux
 #Listar procesos
@@ -28,6 +30,7 @@ find / -type f -name "doas.conf" 2>/dev/null
 #Busca por la configuracion de doas. Permite ejecutar comandos como otro usuario (root como default)
 #En dicha configuracion puede estar establecido que se puede ejecutar con X usuario como root sin password. Es parecido a sudo -l
 
+----------      ----------      ----------      ----------
         ### Path hijacking
 #Si encontramos un SETENV: quiere decir que, antes del script que se puede ejecutar como sudo sin pswd, podemos agregar un ENV.
 #De esta forma, si existe un condicional que usa [, es posible abusarnos de la forma que linux interpreta discho caracteres para que nos ejecute otra cosa. Esto seria:
@@ -38,11 +41,15 @@ sudo PATH=/tmp:$PATH script
 Esto (para el caso de '[') solo es posible si en .bashrc se encuentra una linea: enable -n [ # ]
 [!]
 
+----------      ----------      ----------      ----------
         ### Lugares a revisar
-linpeas.sh
-#Escanea el sistema en busqueda de posibles vulnerabilidades
-kernel version
-#Linpeas nos da la version del kernel -> Buscar por vulnerabilidades
+##linpeas.sh
+Escanea el sistema en busqueda de posibles vulnerabilidades
+-> Revisar 
+	- Capabilities. Revisar toda la seccion de capabilities y googles
+	- Software instalados
+	- Version de linux y sudo
+----------
 /opt, /etc
 #Se encuentran tools, binarios o aplicaciones opcionales.
 .bash_history
@@ -51,10 +58,11 @@ lsb release -a
 #Ver info del sistema operativo como la version
 netstat -nat
 #Ver puertos abiertos en localhost
-ps- faux | grep <puerto encontrado en netstat>
+ps -faux | grep <puerto encontrado en netstat>
 #Al estar en el localhost, es posible de esta forma encontrar el directorio en el cual se encuentra la pagina e intentar buscar info que nos sea importante
 #Tambien, dependiendo el caso, se podria hacer pivoting. Ver txt sobre el tema
 
+----------      ----------      ----------      ----------
         ### Croonjobs
 pspy (https://github.com/DominicBreuker/pspy)
 #Es un tool que permite ver las tareas que se ejecutan en un sistema en X tiempo.
