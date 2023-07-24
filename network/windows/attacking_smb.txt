@@ -15,7 +15,6 @@ crackmapexec smb -u .. -p .. --shares
 ## Enumeracion
 smbclient -L <ip> -N
 #Permite enumerar recursos compartidos mediante un null session -> Puede llegar a no devolver recursos
-
 ## Coneccion
 smbclient //<ip>/share_folder -N
 #Conexion mediante null session al folder
@@ -24,6 +23,7 @@ smbclient //<ip>/share_folder -N
 ## Enumeracion
 smbmap -H <ip>
 #Null sersion con smbmap. Si no reporta nada usar -u none
+#En caso de que no funcione usar -u '' o -u 'null'
 smbmap -H <ip> -u <"usr"> -p <"pswd">
 #Permite ver recursos compartidos (similar a crackmapexec)
 smbmap -u -p -r <share>

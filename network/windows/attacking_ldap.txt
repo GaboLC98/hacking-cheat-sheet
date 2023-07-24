@@ -9,3 +9,8 @@ ldapsearch -x -h -b "DC=,DC=" | grep -i userprincipalname
 ldapdomaindump -u <"domain.local\usr"> -p <"psw"> <ip>
 #Dumpea info que se puede acceder desde el usuario pasado
 
+### Crackmapexec
+crackmapexec ldap 10.10.11.202 -u ryan.cooper -p NuclearMosquito3 -M adcs
+#Esto sirve para saber si se usa ADCS en el dominio
+#En el caso de que si se use, se debe descargar https://github.com/GhostPack/Certify
+#Para mas info de explotacion ver privesc.txt
