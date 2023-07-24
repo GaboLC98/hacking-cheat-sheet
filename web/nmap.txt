@@ -1,0 +1,4 @@
+	#### Nmap http script
+
+--script http-enumvuln 
+#Script para enumerar http de forma menos activa que con un fuzzer

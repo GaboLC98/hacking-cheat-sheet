@@ -133,6 +133,7 @@ phar://<ubicacion>/shell.jpg/shell.txt&cmd=id
 #Es muy similar a la tecnica con un zip. La diferencia es la sintaxis de como se llama a lo que esta almacenado dentro.
 
 	### Log poisioning
+*Revisar tambien command_injection.txt seccion PHP command injection
 ##PHP Session ID poisioning
 La cookie de sesion es almacenada con todos los datos del usuario en dos path distintos dependiendo el OS:
 Linux: /var/lib/php/sessions/

