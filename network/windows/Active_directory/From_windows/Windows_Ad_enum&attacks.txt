@@ -244,5 +244,35 @@ Get-DomainUser testspn -Properties samaccountname,serviceprincipalname,msds-supp
 
 
 ----------  ----------  ----------  ----------
-	### Enumerar ACLs
+	### Enumerar ACLs con PowerView
+Import-Module .\PowerView.ps1
+$sid = Convert-NameToSid <user>
+
+## user GUID
+Get-DomainObjectACL -Identity * | ? {$_.SecurityIdentifier -eq $sid}
+#Se buscan todos los objetos de dominio del usuario almacenado en $sid
+#Gracias a SecurityIdentifier podemos saber quien tiene permisos sobre un objeto
+
+-> ObjectAceType del output es el GUID el cual puede googlearse y conocer los permisos que se tienen sobre usuarios o grupos
+#Esto tambien es posible verse mediante la siguiente flag: -ResolveGUIDs
+Get-DomainObjectACL -ResolveGUIDs -Identity * | ? {$_.SecurityIdentifier -eq $sid} 
+#Se realiza la misma consulta que al principio pero resolviendo a lenguaje el significado de GUID
+
+-> ActiveDirectoryRights del output son los permisos que pose el usuario
+
+## Creating a List of Domain Users
+Get-ADUser -Filter * | Select-Object -ExpandProperty SamAccountName > ad_users.txt
+#Creo lista de usuarios
+foreach($line in [System.IO.File]::ReadLines("C:\Users\htb-student\Desktop\ad_users.txt")) {get-acl  "AD:\$(Get-ADUser $line)" | Select-Object Path -ExpandProperty Access | Where-Object {$_.IdentityReference -match 'INLANEFREIGHT\\<user>'}}
+#Hago un for loop para leer y buscar info sobre el usuario que me interesa
+
+## Enumerating group
+Get-DomainGroup -Identity "<group name>" | select memberof
+#Informacion como el common name del grupo
+$itgroupsid = Convert-NameToSid "<CN>"
+Get-DomainObjectACL -ResolveGUIDs -Identity * | ? {$_.SecurityIdentifier -eq $itgroupsid} -Verbose
+#Buscar info mediante el CN
+
+Get-DomainObjectACL -Identity "<group name>" -ResolveGUIDs | ? {$_.SecurityIdentifier -eq $sid}
+#Enumerar sobre grupo con el usuario especificado en $sid
 
