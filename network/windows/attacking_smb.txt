@@ -4,12 +4,22 @@
 ## Enumeracion
 crackmapexec <ip>
 #Obtener info del smb como domain, os
+crackmapexec smb <ip> --users
+#Permite enumerar usuarios y nombre de maquinas en el target 
 crackmapexec smb <ip> -u <diccionario> --no-bruteforce
 #Permite probar por cada linea en el diccionario, la password igual a -u (o sea jsmit:jsmiith por ejemplo)
 crackmapexec smb -u <diccionario> -p <diccionario>
 #Bruteforcea a cada user, la password. Se le puede pasar str en vez de diccionarios
 crackmapexec smb -u .. -p .. --shares
 #Permitie ver los shares y los permisos quie se tienen sobre ellos con el usuario X
+
+sudo crackmapexec smb 172.16.7.3 --users -u AB920 -p weasal > users.txt
+cat users.txt | awk '{ print $5 }' | cut -d '\' -f2 > valid_users.txt
+#Con usuario y pwd valida, permite extraer usuario.
+#Luego se limpia el output para tenerlo bien
+
+sudo crackmapexec smb 172.16.7.3 -u BR086 -p Welcome1 -M spider_plus --share 'Department Shares'
+#Permite enumerar un share identificado anteriormente donde tenemos acceso y guardar el output en /tmp/cme_spider_plus
 
 ### smbclient
 ## Enumeracion
@@ -18,6 +28,8 @@ smbclient -L <ip> -N
 ## Coneccion
 smbclient //<ip>/share_folder -N
 #Conexion mediante null session al folder
+smbclient //172.16.7.3/Share -U=user%password
+#Coneccion con smbclient mediante usuario y pwd valida
 
 ### smbmap
 ## Enumeracion

