@@ -1,0 +1,7 @@
+	### EyeWitness
+eyewitness --web -x <nmap otuput>.xml -d <export name>
+#Devuelve un analisis con capturas de las paginas en el output
+
+	### Aquatone
+cat <nmap output>.xml | ./aquatone -nmap
+#Similar a eyewitness
