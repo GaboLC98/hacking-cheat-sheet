@@ -1,4 +1,6 @@
 	####SQLi
+Portswigger cheatsheet: https://portswigger.net/web-security/sql-injection/cheat-sheet
+
 Las inyeccioones de SQL se abusan de el input de un usuario no sanitizado. De esta forma, de podria intrducir codigo com "SHOW TABLES;" al buscar un usuario por una barra de busqueda.
 select * from logins where username like '%1'; SHOW TABLES;'
 #En este ejemplo se introdujo 1'; SHOW TABLES;
