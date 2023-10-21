@@ -1,0 +1,8 @@
+	### Attacking Tomcat
+Es un servidor web open source escrito en Java.
+Se usa en el 1.22% de de las paginas
+
+	## Footprinting
+curl -s http://app-dev.inlanefreight.local:8080/docs/ | grep Tomcat 
+#Realizar request a la pagina de la documentacion
+
