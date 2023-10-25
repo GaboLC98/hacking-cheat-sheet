@@ -1,0 +1,26 @@
+	### Splunk
+Es un tool de alasisis de logs para obtener, analiar y visualizar data. Suele contener informacion sensible.
+Puede correrse tanto en Windows como Linux, de esta forma puede ser creado con Bash, PowerShell o Batch. A su vez, viene instalado como default Python.
+
+	## Footprinting
+puerto: 8000
+#Por default, Splunk corre en el puerto 8000
+admin:changeme
+#En versiones anteriores, estas son las credenciales por default. En las ultimas versiones la pwd se crea en la instalacion.
+Splunk free
+#Si se usa splunk free o la version trial pasa los 60 dias, no se necesitan credenciales para acceder al servicio. Si los administradores instalaron solo para probar y no la removieron, dicho servicio puede ser accesible publicamente
+
+
+	## Attacking Splunk
+https://github.com/0xjpuff/reverse_shell_splunk
+#El directorio bin tiene ejemplos de script en python y powrshell para obtener una shell.
+inputs.conf
+#Este archivvo le dice a Splunk que script correr y el intervalo en segundos
+rev.py
+#Script para sistemas linux en python
+run.bat
+#Script para sistemas Windows
+tar -cvzf updater.tar.gz splunk_shell/
+#Una vez creadi kis archivos podemos crear un .spl file
+en-US/manager/search/apps/local
+#EN la pagina de splunk seleccionamos instalar app desde un file para subirlo

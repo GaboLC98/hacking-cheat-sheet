@@ -1,0 +1,9 @@
+	### PRTG Network Manager
+Es un software de monitoreo de red que puede obtener estadisticas de varios hosts, routers, switches, etc.
+
+	## Footprinting
+prtgadmin:prtgadmin
+#Default credentials
+curl -s http://10.129.201.50:8080/index.htm -A "Mozilla/5.0 (compatible;  MSIE 7.01; Windows NT 5.0)" | grep version
+#Buscar la version del sw
+

