@@ -1,0 +1,17 @@
+	### GitLab
+Es uun repositorio git basado en web. Esta escrito en Ruby pero incluye stacks en Go.
+Es similar a gitHub y BitBucket.
+2factor esta deshabilitado por default y puede ser configurado para que cualquier usuario pueda registrarse.
+
+	## Footprinting
+/help
+#Enumerar la version de gitlab en uso Estando logueado
+www.exploit-db.com/exploits/49821
+#En el caso de no poder registrar cuentas es bueno probar este low-risk exploiit
+/explore
+#Se encuentras los repositorios publicos. Quizas por error hay algo que no deberia estar o info importante
+/users/sign_up
+#Si esta habilitado podriamos usar la funcionalidad de registro para eumerar usuarios o emaiils e investigar con dehashed (ver osTiicker para ejemplo)
+
+	## Attacking GitLab
+

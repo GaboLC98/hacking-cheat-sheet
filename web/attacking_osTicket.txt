@@ -1,0 +1,14 @@
+	### osTicket
+Es un sistema de ticket open source como Jira, OTRS, etc. Esta escrito en PHP y usa MySQL coo db.
+
+	## Footprinting
+OSTSESSID
+#Cookie usada por osTicket
+
+	## Attacking osTicket
+Informatio discl.
+#Mas alla de las vulnerabilidades propias que pueda tener, existe el probblema de revelar infomracion importante como mails, contraseñas, etc
+
+sudo python3 dehashed.py -q inlanefreight.local -p
+#Permite obtener informacion sobre Data Expousure
+
