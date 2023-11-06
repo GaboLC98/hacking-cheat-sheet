@@ -1,0 +1,5 @@
+	### Thick client applications
+Son aplicaciones que estan instaladas de forma local en la computadora. Son aplicaciones que sirven a un proposito en particular y no requiere acceso a internet.
+Segun la arquitectura se dividden en Two tier o Three tier. Two-tier es comunicacion de la aplicacion con la db de forma directa; Three-tier se refiere al uso de un servidor intermedio para la comunicacion.
+
+	

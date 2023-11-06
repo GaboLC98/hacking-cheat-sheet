@@ -14,4 +14,8 @@ www.exploit-db.com/exploits/49821
 #Si esta habilitado podriamos usar la funcionalidad de registro para eumerar usuarios o emaiils e investigar con dehashed (ver osTiicker para ejemplo)
 
 	## Attacking GitLab
-
+github.com/dpgg101/GitLabUserEnum.git
+www.exploit-db.com/raw/49821
+#Script para user enumeration (usr.txt con varios usuarios https://raw.githubusercontent.com/ThomasTJdev/WMD/master/files/user.txt) [!]Probar muchas!
+www.exploit-db.com/raw/49951
+#Script para auth command exec versiones < 13.10.2 (requerimiento previo: sudo apt install djvulibre-bin)

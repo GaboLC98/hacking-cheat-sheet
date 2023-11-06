@@ -1,0 +1,33 @@
+	### Attacking ColdFusion
+ColdFusion es un lenjuage de programacion y una aplicacion de desarrollo basada en Java.
+Se usa para armar web aplications dinamicas e interactivas que se puede conectar a varias APIs u DBs
+
+CFML es el Markup Language de coldfusion y es el lenguaje utilizado para programar en ColdFusion. Sintaxis similar a HTML.
+El tag cfquery puede ejecutar sentencias SQL para obtener data de la DB.
+Ejemplo:
+<cfquery name="myQuery" datasource="myDataSource">
+  SELECT *
+  FROM myTable
+</cfquery>
+
+ColdFusion expone algunos puertos por default:
+25 -> SMTP
+80 -> Comunicacion web	
+443 -> Mismo pero encriptado
+1935 -> RPC
+5500 -> Remote administration de ColdFusion
+8500 -> Comunicacion mediante SSL
+
+	## Enumeracion
+ffuf -w <diccionario.txt> -u http://IP/FUZZ.cfm
+#La extension puede ser CFM o CFC.
+ffuf -w <diccionario.txt> -u http://IP:8500/CFIDE/FUZZ.cfm
+#Ademas de la extencion, el path puede ser CFIDE o cfdocs. Estos son los que se encuentran en el puerto 8500
+
+/CFIDE/administrator
+#Path de login de admin de CloudFusion. Disclousure de version
+
+	## Attacking ColdFusion
+searchsploit adobe coldfusion
+#Buscar known vulns con searchsploit. Siempre buscar tambien en google por la version.
+
