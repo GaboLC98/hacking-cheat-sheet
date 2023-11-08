@@ -1,0 +1,44 @@
+	### Linux PRIVESC
+
+	## Enumeracion
+ps aux | grep root
+#Lista los procesos actuales bajo usr root
+ps au
+#Lista procesos actuales
+history
+#Sirve para ver el historial de comandos
+sudo -l
+#Permite enumerar los comandos que el usuario puede correr como sudo sin password
+cat /etc/passwd
+#Revisar si hay hashes
+cat /etc/shadow
+#Revisar si tenemos acceso de lectura
+find / -path /proc -prune -o -type d -perm -o+w 2>/dev/null
+#Buscar directorios con capacidad de escritura
+find / -path /proc -prune -o -type f -perm -o+w 2>/dev/null
+#Buscar files con capacidad de escritura
+find / -type f -name ".*" -exec ls -l {} \; 2>/dev/null | grep htb-student
+#Permite enumerar todos los archivos ocultos
+find / -type d -name ".*" -ls 2>/dev/null
+#Permite enumerar todos los directorios ocultos
+cat /etc/os-release
+#Obtener informacion del OS
+uname -a
+#Permite ver el kernel y la versin del mismo
+echo $PATH
+#Revisar el path del usr
+env
+#Variables de entorno
+lsblk
+#Permite enumerar dispositivos como hard diske, USBs, discos opticos, etc. Pueden contener info sensible
+lpstat
+#Permite enumerar impresoras attacheadas al sistema. Si hay trabajos en cola, puden tener info sensible
+netstat -nat
+#Permite enumerar los puertos abiertos en la maquina
+cat /etc/group
+#Permite listar todos los grupos existentes
+getent group sudo
+#Permite listar usuarios que pertenecen al grupo sudo (en este ejemplo, puede ser cualquier otro)
+ls -l /tmp /var/tmp /dev/shm
+#Listar contenido de directorios temporales
+

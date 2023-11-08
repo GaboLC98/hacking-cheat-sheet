@@ -1,0 +1,16 @@
+	### Attacking ISS Tilde
+Esta enumeracion se basa en como ISS crea los archivos y como nos permite saber el nombre del mismo.
+El mecanismo consta de enviar peticiones http http://example.com/~a,http://example.com/~b buscando un codigo 200OK. UNa vez encontrado el codigo, sabemos que la letra es correcta y podemos seguir con la siguiente.
+El formato de estos archivos son 8 caracteres para el nombre, un punto y 3 caracteres para la extension.
+
+En el ejemplo, el ddirectorio es secret~1. Una vez obtenido el nombre, se puede enumerar archvios.
+http://example.com/secret~1/somefile.txt
+
+	## Enumeracion
+java -jar iis_shortname_scanner.jar 0 5 http://10.129.204.231/
+#Automatiza el proceso de enumeracion del metodo de arriba.
+egrep -r ^transf /usr/share/wordlists/ | sed 's/^[^:]*://' > /tmp/list.txt
+#Crear listas para poder fuzzear
+gobuster dir -u http://10.129.204.231/ -w /tmp/list.txt -x .aspx,.asp
+#Fuzzear con gobuster y la lista creada.
+

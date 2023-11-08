@@ -1,0 +1,23 @@
+	### Attacking LDAP
+Es usado para acceder y manejar informacion de directorios. Estos directorios son un data store jerarquico que contiene informacion de recursos de la red como grupos, usuarios, passwords, etc.
+Puede ser usado para: Autenticacion, Autorizacion, Servicio de directorios y Sincronizacion.
+
+Implementaciones populares: OpenLDAP y Active Directory.
+
+Hay una version de este txt en network/windows
+
+	## Enumeracion
+ldapsearch -H ldap://ldap.example.com:389 -D "cn=admin,dc=example,dc=com" -w secret123 -b "ou=people,dc=example,dc=com" "(mail=john.doe@example.com)"
+#ldapsearch es cun command line que se usa para buscar informacion en LDAP. -H <server:port>; -D <user para authenticacion y nombre del dc>: -w <password>; -b <Busca ou=people,dc=example,dc=com> <filtra por mail=john.doe@example.com>
+
+	## Inyeccion
+La inyeccion en LDAP es muy similar a una SQLi. La misma cuenta con caracteres que pueden ponerse que, si no esta bien desarrollado, pueda generar que nos loguiemos como X usuario.
+
+*	An asterisk * can match any number of characters.
+( )	Parentheses ( ) can group expressions.
+|	A vertical bar | can perform logical OR.
+&	An ampersand & can perform logical AND.
+(cn=*)	Input values that try to bypass authentication or authorisation checks by injecting conditions that always evaluate to true can be used. For example, (cn=*) or (objectClass=*) can be used as input values for a username or password fields.
+https://academy.hackthebox.com/module/113/section/2153
+
+En el ejemplo del laboratorio, se usa LDAP para autenticarse en el puerto 80. El simple bypass que se debe realizar es con * en ambos campos, lo que permite loguearnos.

