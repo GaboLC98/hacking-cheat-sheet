@@ -1,6 +1,13 @@
 	### Enumeracion y cracking
+
+sudo aireplay-ng --test wlan1
+#Verificar funcionamiento de antena
+sudo ifconfig wlan1 down && sudo iwconfig wlan1 mode monitor
+#Poner el adaptador en monitoreo
+sudo ifconfig wlan1 down && sudo iwconfig wlan1 mode managed
+#Volver el adaptador a normal
 airmon-ng start wlan0
-#Poner el adaptador wifi en monitoreo
+#Poner el adaptador wifi en monitoreo - opcion 2
 airodump-ng wlan0mon
 #Comenzar a escuchar y ver las redes disponibles junto con la MAC, la potencia, data, etc.
 airodump-ng -c <channel> -w <out file> --bssid <MAC address> wlan0mon

