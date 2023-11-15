@@ -107,9 +107,22 @@ lxc exec r00t /bin/sh
 116(lxd)
 #Grupo Linux deamon
 cd ContainerImages
-#Carpeta donde se encuentran las imagenes
+#Carpeta donde se encuentran las imagenes (si no esta la carpeta se lista con lxc image list)
+
+[!]
+git clone https://github.com/saghul/lxd-alpine-builder
+sudo ./build-alpine
+#Si no hay imagenes, se puede crear de esta forma. Se genera una imagen .tar.gz que se pasa a la maquina y se importa
+[!]
+
 lxc image import <image name> --alias ubuntutemp
 #Se importa la imagen
+
+[!]
+En caso de que no deje hacer esto en /tmp revisar de hacerlo en /dev/shm
+[!]
+lxd init --auto
+#En caso de que nunca se haya ejecutado, se corre este comando
 lxc image list
 #Se verifican las imagenes
 lxc init ubuntutemp privesc -c security.privileged=true
