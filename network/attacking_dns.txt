@@ -13,7 +13,7 @@ parte de la base de uno de estos sv a otro. Esta transferencia de zona no requie
 la informacion de su zona. De esta forma un atacante puede obtener mas informacion y aumentar su superficie de ataque.
 
 ##Comandos
-dig AXFR @dominio url
+dig AXFR @ip url
 #AXFR sirve para volcar todos los espacios de nombres DNS de un sv vulnerable
 fierce --domain zonetransfer.me
 #Enumerar todos los servidores DNS del dominio raiz para buscar transf de zona

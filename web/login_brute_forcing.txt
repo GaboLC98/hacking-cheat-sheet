@@ -28,7 +28,7 @@ El primero, usado anes en este txt sirrve para HHTTP auth, mientras que el segun
 hydra http-post-form -U
 #Vemos el ayuda parra el modulo mencionado
 
-"/<direccion>:<parrametro de usuario>=^USER^&<parametro password>=^PASS^:<F/S>=>success/failed string>"
+"/<direccion>:<parrametro de usuario>=^USER^&<parametro password>=^PASS^:<F/S>=<success/failed string>"
 #Esto debe unirse a la sintaxis normal de hydra como se muestra abajo
 #La direccion hace referencia a donde eesta el form. Ej: url/login.php
 #Parametro usr o pwd es el nombre al que se le asigna para ser enviado por post en la request

