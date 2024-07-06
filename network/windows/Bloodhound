@@ -1,0 +1,5 @@
+./SharpHound.exe --CollectionMethods All
+#Extraer los datos del env. -> Genera un .zip con toda la data.
+sudo neo4j start
+#Comenzar el servicio para poder ejecutar bloodhound
+

@@ -1,0 +1,9 @@
+
+## Blind SSRF
+Con BLIND ssrf vamos a tener que realizar request hacia nuestro servidor para ver si recibimos algo.
+
+<img src="http://<SERVICE IP>:PORT/x?=viaimgtag">
+#script para enviarnos
+blind_ssrf_script.html
+#Script dentro de este folder que nos va a prmitir exfiltrar archivos en caso de poder hacer SSRF
+

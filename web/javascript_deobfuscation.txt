@@ -1,0 +1,12 @@
+### 	JavaScript Deobfuscation
+
+La obfuscacion de codigo java script se realiza para que no sea legible a simple vista. De esta forma existe los minificadores (https://www.toptal.com/developers/javascript-minifier) que sirve para poder achicar el codigo js en una sola linea
+Los obfuscadores (https://beautifytools.com/javascript-obfuscator.php# o https://obfuscator.io/#code) sirven para complejizar la logica del codigo y que sea realmente ilegible.
+En base a estas tecnicas, si queremos volver el codigo a su estado original se pueden hacer diferentes cosas.
+
+## Deobfuscacion
+Con ctrl + shift + c podemos abrir el debugger, al seleccionar el .js y hacer click en los {} que se muestran en la parte inferior, se puede acomodar el estilo del codigo a algo mas legible.
+Agarrando este codigo y pasandolo por un decoder (https://matthewfl.com/unPacker.html) el cual permite desempaquetar el codigo.
+[!]
+Para saber si un codigo esta empaquetado, vamos a poder ver esto en el mismo: function (p, a, c, k, e, d)
+[!]

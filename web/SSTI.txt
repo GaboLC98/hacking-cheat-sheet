@@ -1,0 +1,8 @@
+	### Server Side Template Injection
+
+https://raw.githubusercontent.com/payloadbox/ssti-payloads/master/Intruder/ssti-payloads.txt
+#SSTI payaload list
+https://github.com/epinna/tplmap
+#SSTI map
+https://book.hacktricks.xyz/pentesting-web/ssti-server-side-template-injection
+#Pagina para matchear entre payload y template
